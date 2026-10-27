@@ -1,0 +1,2602 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workspace Hidrasi & Fokus Kerja 💧🔥</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        cobalt: {
+                            DEFAULT: '#0B63F6',
+                            hover: '#0952CC',
+                            light: '#EBF2FF',
+                            border: '#C2D9FF'
+                        },
+                        offwhite: '#F4F4F4'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #F4F4F4;
+            color: #0F172A;
+            font-family: 'Inter', sans-serif;
+        }
+        /* Animasi gelombang air */
+        .water-wave {
+            transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .wave-surface {
+            background: linear-gradient(180deg, rgba(59, 130, 246, 0.45) 0%, rgba(11, 99, 246, 0.92) 100%);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F1F5F9;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.98); box-shadow: 0 0 0 0 rgba(11, 99, 246, 0.55); }
+            70% { transform: scale(1); box-shadow: 0 0 0 14px rgba(11, 99, 246, 0); }
+            100% { transform: scale(0.98); box-shadow: 0 0 0 0 rgba(11, 99, 246, 0); }
+        }
+        .alarm-active {
+            animation: pulse-ring 1.5s infinite;
+        }
+        .checkbox-custom:checked + div {
+            text-decoration: line-through;
+            color: #94A3B8;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-3 sm:p-5 lg:p-6">
+
+    <!-- Kontainer Utama -->
+    <div class="max-w-[1400px] w-full mx-auto space-y-5">
+        
+        <!-- Header Bar -->
+        <header class="bg-white rounded-2xl p-4 md:px-6 shadow-sm border border-slate-200/80 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3.5">
+                <div class="w-12 h-12 rounded-2xl bg-cobalt text-white flex items-center justify-center shadow-md shadow-cobalt/25 flex-shrink-0">
+                    <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2.5 flex-wrap">
+                        <h1 class="text-lg md:text-xl font-extrabold tracking-tight text-slate-900">Dashboard Kerja, Fokus & Hidrasi</h1>
+                        <!-- Indikator Real-Time Auto-Save & Cloud Sync -->
+                        <span id="saveStatusBadge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 transition-transform" title="Tersimpan otomatis di Cloud & Perangkat">
+                            <span id="saveStatusDot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span id="saveStatusText">Auto-Save & Cloud Aktif</span>
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-3 mt-0.5 flex-wrap">
+                        <p class="text-xs text-slate-500 font-medium" id="currentDateDisplay">Memuat tanggal...</p>
+                        <span class="text-slate-300">•</span>
+                        <p class="text-[11px] text-slate-500 font-semibold" id="lastSavedTimeText">Tersimpan otomatis: barusan</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kontrol Akun Cloud Sync, Pengaturan & Proteksi Keluar -->
+            <div class="flex items-center gap-2 flex-wrap">
+                <!-- Tombol Akun Cloud Sync (Ganti Device) -->
+                <button id="btnCloudAccount" onclick="openAccountModal()" class="text-xs font-bold px-3.5 py-2 rounded-xl bg-cobalt text-white hover:bg-cobalt-hover shadow-sm shadow-cobalt/20 flex items-center gap-2 transition-all" title="Masuk atau hubungkan ID Akun agar sinkron di semua perangkat">
+                    <i data-lucide="cloud" class="w-4 h-4"></i>
+                    <span id="accountBadgeText">Akun Sync: Lokal</span>
+                </button>
+
+                <!-- Toggle Cegah Tertutup Tidak Sengaja -->
+                <button id="btnPreventClose" onclick="togglePreventClose()" class="text-xs font-semibold px-3 py-2 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 flex items-center gap-1.5 transition-all" title="Munculkan peringatan konfirmasi jika tab tidak sengaja tertutup saat timer berjalan">
+                    <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                    <span id="preventCloseText">Proteksi Tab: ON</span>
+                </button>
+
+                <!-- Tombol Notifikasi Desktop -->
+                <button id="btnNotificationPerm" onclick="requestNotificationPermission()" class="text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center gap-1.5 transition-all">
+                    <i data-lucide="bell" class="w-4 h-4 text-cobalt"></i>
+                    <span id="notifStatusText">Notifikasi Desktop</span>
+                </button>
+
+                <!-- Tombol Suara -->
+                <button id="btnSoundToggle" onclick="toggleMute()" class="text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 flex items-center gap-1.5 transition-all" title="Bisu / Bunyikan Alarm">
+                    <i data-lucide="volume-2" id="soundIcon" class="w-4 h-4 text-cobalt"></i>
+                    <span id="soundStatusText">Suara ON</span>
+                </button>
+
+                <!-- Tombol Backup / Restore File JSON -->
+                <button onclick="openBackupModal()" class="text-xs font-semibold px-3 py-2 rounded-xl bg-cobalt-light text-cobalt hover:bg-blue-100 transition-all flex items-center gap-1.5" title="Simpan cadangan data ke file atau pulihkan data">
+                    <i data-lucide="database-backup" class="w-4 h-4"></i>
+                    <span>Cadangkan Data</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- GRID UTAMA 3 KOLOM DESKTOP -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+            
+            <!-- KOLOM 1: CHECKLIST PERSIAPAN KERJA & TO-DO (4 KOLOM) -->
+            <div class="lg:col-span-4 flex flex-col">
+                <div class="bg-white rounded-3xl p-5 md:p-6 shadow-sm border border-slate-200/80 flex-1 flex flex-col justify-between">
+                    <div>
+                        <!-- Header Checklist -->
+                        <div class="flex items-start justify-between gap-2 mb-3">
+                            <div>
+                                <span class="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                                    <i data-lucide="list-checks" class="w-3.5 h-3.5"></i> Ritual & Target Kerja
+                                </span>
+                                <h2 class="text-base md:text-lg font-extrabold text-slate-900 mt-1.5">Checklist Mulai Kerja</h2>
+                                <p class="text-xs text-slate-500">Ceklis persiapan wajib sebelum mulai fokus kerja</p>
+                            </div>
+                            <button onclick="uncheckAllRoutineTasks()" class="text-[11px] font-bold px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center gap-1 transition-all flex-shrink-0" title="Reset tanda ceklis untuk sesi kerja baru tanpa menghapus daftar">
+                                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 text-cobalt"></i>
+                                Reset Ceklis
+                            </button>
+                        </div>
+
+                        <!-- Progress Bar Checklist -->
+                        <div class="bg-slate-50 rounded-2xl p-3.5 border border-slate-200/70 mb-4">
+                            <div class="flex items-center justify-between text-xs mb-1.5">
+                                <span id="checklistStatusTitle" class="font-bold text-slate-700">Progres Persiapan Kerja</span>
+                                <span id="checklistProgressCount" class="font-extrabold text-cobalt">0/0 Selesai (0%)</span>
+                            </div>
+                            <div class="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
+                                <div id="checklistProgressBar" class="h-full bg-emerald-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <p id="checklistMotivationText" class="text-[11px] text-slate-500 mt-1.5 font-medium">
+                                Selesaikan ritual awal kerjamu agar sesi hari ini lebih terarah!
+                            </p>
+                        </div>
+
+                        <!-- Filter Tab Kategori Checklist -->
+                        <div class="flex items-center justify-between gap-2 mb-3">
+                            <div class="flex items-center bg-slate-100 p-1 rounded-xl w-full">
+                                <button id="tabChecklistRoutine" onclick="switchChecklistFilter('all')" class="flex-1 text-xs font-bold py-1.5 px-2 rounded-lg bg-white text-cobalt shadow-sm transition-all">
+                                    Semua (<span id="badgeCountAllTasks">0</span>)
+                                </button>
+                                <button id="tabChecklistRitual" onclick="switchChecklistFilter('routine')" class="flex-1 text-xs font-semibold py-1.5 px-2 rounded-lg text-slate-600 hover:text-slate-900 transition-all">
+                                    Ritual Awal (<span id="badgeCountRoutineTasks">0</span>)
+                                </button>
+                                <button id="tabChecklistTodo" onclick="switchChecklistFilter('todo')" class="flex-1 text-xs font-semibold py-1.5 px-2 rounded-lg text-slate-600 hover:text-slate-900 transition-all">
+                                    Tugas (<span id="badgeCountTodoTasks">0</span>)
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Form Tambah Item Checklist Baru -->
+                        <form onsubmit="handleAddTask(event)" class="mb-3 space-y-2">
+                            <div class="flex gap-1.5">
+                                <input type="text" id="newTaskInput" placeholder="Tambah langkah kerja / tugas baru..." required
+                                    class="flex-1 text-xs font-medium px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-cobalt focus:ring-2 focus:ring-cobalt/15 bg-slate-50/70">
+                                <button type="submit" class="px-3.5 py-2.5 rounded-xl bg-cobalt hover:bg-cobalt-hover text-white font-bold text-xs flex items-center gap-1 shadow-sm transition-all flex-shrink-0">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                    Tambah
+                                </button>
+                            </div>
+                            <div class="flex items-center justify-between px-1">
+                                <label class="inline-flex items-center gap-1.5 text-[11px] text-slate-600 font-medium cursor-pointer">
+                                    <input type="radio" name="taskCategory" value="routine" checked class="text-cobalt focus:ring-cobalt">
+                                    <span>Ritual Mulai Kerja (Tetap)</span>
+                                </label>
+                                <label class="inline-flex items-center gap-1.5 text-[11px] text-slate-600 font-medium cursor-pointer">
+                                    <input type="radio" name="taskCategory" value="todo" class="text-cobalt focus:ring-cobalt">
+                                    <span>Target / To-Do Hari Ini</span>
+                                </label>
+                            </div>
+                        </form>
+
+                        <!-- Daftar Item Checklist -->
+                        <div id="checklistContainer" class="space-y-2 max-h-[340px] overflow-y-auto pr-1">
+                            <!-- Diisi via JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Footer Checklist Actions -->
+                    <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+                        <button onclick="restoreDefaultRoutineTasks()" class="hover:text-cobalt font-semibold flex items-center gap-1 transition-all">
+                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Muat Template Standar
+                        </button>
+                        <button onclick="clearCompletedTodos()" class="hover:text-rose-600 font-semibold flex items-center gap-1 transition-all">
+                            <i data-lucide="trash" class="w-3.5 h-3.5"></i> Bersihkan Tugas Selesai
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KOLOM 2: FOKUS MODE (2 JAM KERJA / 30 MENIT REST) & TIMER MINUM (1 JAM) (4 KOLOM) -->
+            <div class="lg:col-span-4 flex flex-col gap-5">
+                
+                <!-- PANEL 2A: FOKUS MODE (120 MENIT KERJA / 30 MENIT REST) -->
+                <div id="focusCardContainer" class="bg-white rounded-3xl p-5 md:p-6 shadow-sm border border-slate-200/80 flex flex-col justify-between relative overflow-hidden transition-colors">
+                    
+                    <!-- Top Bar Fokus -->
+                    <div class="flex items-center justify-between gap-2 mb-3">
+                        <div id="focusModeBadge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                            <i data-lucide="flame" id="focusModeIcon" class="w-3.5 h-3.5 text-indigo-600"></i>
+                            <span id="focusModeLabel">Mode Fokus Kerja (2 Jam)</span>
+                        </div>
+
+                        <div class="flex items-center gap-1">
+                            <span class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700" title="Jumlah siklus fokus 2 jam yang diselesaikan hari ini">
+                                🏆 <span id="focusSessionsTodayCount">0</span> Sesi
+                            </span>
+                            <button onclick="setFocusTest5Sec()" class="text-[11px] font-bold px-2 py-1 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 transition-all flex items-center gap-1" title="Tes bunyi & pergantian mode Fokus/Rest dalam 5 detik">
+                                <i data-lucide="zap" class="w-3 h-3"></i> 5d
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Switcher Mode Manual (Fokus 2 Jam vs Rest 30 Menit) -->
+                    <div class="grid grid-cols-2 gap-1.5 bg-slate-100 p-1 rounded-xl mb-4">
+                        <button id="btnSelectFocusMode" onclick="switchFocusPhase('work')" class="py-1.5 px-3 rounded-lg text-xs font-bold bg-white text-indigo-700 shadow-sm flex items-center justify-center gap-1.5 transition-all">
+                            <i data-lucide="laptop" class="w-3.5 h-3.5"></i> Fokus (120 mnt)
+                        </button>
+                        <button id="btnSelectRestMode" onclick="switchFocusPhase('rest')" class="py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 transition-all">
+                            <i data-lucide="coffee" class="w-3.5 h-3.5"></i> Rest (30 mnt)
+                        </button>
+                    </div>
+
+                    <!-- Tampilan Waktu Fokus/Rest -->
+                    <div class="my-2 text-center">
+                        <div id="focusCountdownDisplay" class="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 tabular-nums">
+                            02:00:00
+                        </div>
+                        <p id="focusNextInfoText" class="text-xs text-slate-500 mt-1 font-medium">
+                            2 Jam kerja fokus lalu otomatis istirahat 30 menit
+                        </p>
+
+                        <!-- Progress Bar Horizontal Fokus -->
+                        <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden mt-3 border border-slate-200/60">
+                            <div id="focusProgressBar" class="h-full bg-indigo-600 rounded-full transition-all duration-300" style="width: 100%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Kontrol Fokus Mode -->
+                    <div class="grid grid-cols-4 gap-2 mt-4">
+                        <button id="btnFocusStartPause" onclick="toggleFocusTimer()" class="col-span-2 py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 flex items-center justify-center gap-1.5 transition-all">
+                            <i data-lucide="play" id="focusStartPauseIcon" class="w-4 h-4 fill-current"></i>
+                            <span id="focusStartPauseText">Mulai Fokus</span>
+                        </button>
+                        <button onclick="skipFocusPhase()" class="py-2.5 px-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1 transition-all" title="Langsung pindah ke fase Fokus / Istirahat berikutnya">
+                            <i data-lucide="skip-forward" class="w-3.5 h-3.5"></i> Lewati
+                        </button>
+                        <button onclick="resetFocusTimer()" class="py-2.5 px-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 font-semibold text-xs flex items-center justify-center gap-1 transition-all" title="Reset waktu fokus">
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- PANEL 2B: PENGINGAT MINUM AIR (1 JAM SEKALI) -->
+                <div class="bg-white rounded-3xl p-5 md:p-6 shadow-sm border border-slate-200/80 flex-1 flex flex-col justify-between relative overflow-hidden">
+                    
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-cobalt-light text-cobalt" id="timerBadge">
+                            <span class="w-2 h-2 rounded-full bg-cobalt" id="timerDot"></span>
+                            <span id="timerStateLabel">Pengingat Minum (1 Jam)</span>
+                        </div>
+
+                        <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                            <button onclick="setDuration(30)" class="preset-btn text-[11px] font-semibold px-2 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-all" data-minutes="30">30m</button>
+                            <button onclick="setDuration(45)" class="preset-btn text-[11px] font-semibold px-2 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-all" data-minutes="45">45m</button>
+                            <button onclick="setDuration(60)" class="preset-btn text-[11px] font-semibold px-2 py-1 rounded-lg bg-white text-cobalt shadow-sm transition-all" data-minutes="60">60m</button>
+                            <button onclick="setTestAlarm()" class="preset-btn text-[11px] font-bold px-2 py-1 rounded-lg text-amber-600 hover:bg-amber-50 transition-all flex items-center gap-0.5" title="Tes alarm minum 5 detik">
+                                <i data-lucide="zap" class="w-3 h-3"></i> 5d
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tampilan Timer Minum dengan Lingkaran Kompak -->
+                    <div class="my-2 flex items-center justify-center gap-5">
+                        <div class="relative w-28 h-28 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="42" stroke="#F1F5F9" stroke-width="8" fill="transparent" />
+                                <circle id="timerProgressCircle" cx="50" cy="50" r="42" stroke="#0B63F6" stroke-width="8" stroke-dasharray="263.89" stroke-dashoffset="0" stroke-linecap="round" fill="transparent" class="transition-all duration-300" />
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <i data-lucide="droplets" class="w-8 h-8 text-cobalt"></i>
+                            </div>
+                        </div>
+
+                        <div class="flex-1">
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Hitung Mundur Minum</span>
+                            <div id="countdownDisplay" class="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 tabular-nums mt-0.5">
+                                01:00:00
+                            </div>
+                            <p id="nextReminderText" class="text-xs text-slate-500 mt-1 font-medium">
+                                Siap mengingatkan setiap 60 menit
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Kontrol Timer Minum -->
+                    <div class="grid grid-cols-3 gap-2 mt-4">
+                        <button id="btnStartPause" onclick="toggleTimer()" class="col-span-2 py-2.5 px-4 rounded-xl bg-cobalt hover:bg-cobalt-hover text-white font-bold text-xs shadow-md shadow-cobalt/20 flex items-center justify-center gap-1.5 transition-all">
+                            <i data-lucide="play" id="startPauseIcon" class="w-4 h-4 fill-current"></i>
+                            <span id="startPauseText">Mulai Timer Minum</span>
+                        </button>
+                        <button onclick="resetTimer()" class="py-2.5 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all">
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                            Reset
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- KOLOM 3: PELACAK HIDRASI & RIWAYAT PERMANEN (4 KOLOM) -->
+            <div class="lg:col-span-4 flex flex-col">
+                <div class="bg-white rounded-3xl p-5 md:p-6 shadow-sm border border-slate-200/80 flex-1 flex flex-col justify-between">
+                    
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <h2 class="text-base font-extrabold text-slate-900">Target Hidrasi Harian</h2>
+                                <p class="text-xs text-slate-500">Standar: <span id="cupSizeLabel" class="font-semibold text-slate-700">250 ml</span> / gelas</p>
+                            </div>
+                            <button onclick="openTargetModal()" class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center gap-1.5 transition-all">
+                                <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-cobalt"></i>
+                                Atur Target
+                            </button>
+                        </div>
+
+                        <!-- Visualisasi Gelas Air & Statistik -->
+                        <div class="bg-slate-50 rounded-2xl p-3.5 border border-slate-200/60 flex items-center gap-4 my-2">
+                            <!-- Animasi Gelas -->
+                            <div class="relative w-16 h-24 rounded-b-2xl rounded-t-md border-4 border-slate-300 bg-white overflow-hidden flex-shrink-0 shadow-inner">
+                                <div id="waterFillElement" class="water-wave wave-surface absolute bottom-0 left-0 right-0 h-0"></div>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span id="waterPercentageText" class="text-[11px] font-extrabold text-slate-800 bg-white/90 px-1.5 py-0.5 rounded-md shadow-sm">0%</span>
+                                </div>
+                            </div>
+
+                            <!-- Detail Capaian -->
+                            <div class="flex-1">
+                                <div class="flex items-baseline gap-1.5">
+                                    <span id="glassCountDisplay" class="text-2xl md:text-3xl font-extrabold text-cobalt">0</span>
+                                    <span class="text-xs font-semibold text-slate-400">/ <span id="targetGlassDisplay">8</span> Gelas</span>
+                                </div>
+                                <p class="text-xs font-semibold text-slate-600 mt-0.5">
+                                    Hari Ini: <span id="mlCountDisplay" class="text-slate-900 font-bold">0</span> / <span id="targetMlDisplay">2000</span> ml
+                                </p>
+                                <p id="hydrationMotivation" class="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
+                                    Yuk mulai minum gelas pertamamu hari ini!
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Tombol Cepat Tambah Minum -->
+                        <div class="space-y-2 my-3">
+                            <button onclick="addWaterIntake(appState.cupSizeMl, 'Gelas Standar')" class="w-full py-2.5 px-4 rounded-xl bg-cobalt hover:bg-cobalt-hover text-white font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-md shadow-cobalt/20">
+                                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                                <span id="mainAddButtonText">+1 Gelas Sudah Minum (250 ml)</span>
+                            </button>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button onclick="addWaterIntake(150, 'Gelas Kecil')" class="py-1.5 px-2 rounded-xl border border-cobalt-border bg-cobalt-light/60 hover:bg-cobalt-light text-cobalt font-semibold text-xs transition-all">
+                                    +150 ml
+                                </button>
+                                <button onclick="addWaterIntake(330, 'Botol Kecil')" class="py-1.5 px-2 rounded-xl border border-cobalt-border bg-cobalt-light/60 hover:bg-cobalt-light text-cobalt font-semibold text-xs transition-all">
+                                    +330 ml
+                                </button>
+                                <button onclick="addWaterIntake(500, 'Tumbler')" class="py-1.5 px-2 rounded-xl border border-cobalt-border bg-cobalt-light/60 hover:bg-cobalt-light text-cobalt font-semibold text-xs transition-all">
+                                    +500 ml
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bagian Riwayat Minum Permanen -->
+                    <div class="mt-2 pt-3 border-t border-slate-100 flex-1 flex flex-col">
+                        <div class="flex items-center justify-between gap-2 mb-2.5">
+                            <div class="flex items-center bg-slate-100 p-1 rounded-xl">
+                                <button id="tabTodayBtn" onclick="switchHistoryTab('today')" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-white text-cobalt shadow-sm transition-all">
+                                    Hari Ini (<span id="countTodayBadge">0</span>)
+                                </button>
+                                <button id="tabAllBtn" onclick="switchHistoryTab('all')" class="text-xs font-semibold px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-all">
+                                    Semua (<span id="countAllBadge">0</span>)
+                                </button>
+                            </div>
+
+                            <div class="flex items-center gap-1">
+                                <button onclick="exportHistoryData()" class="p-1.5 rounded-lg text-slate-500 hover:text-cobalt hover:bg-slate-100 transition-all" title="Salin ringkasan riwayat ke Clipboard">
+                                    <i data-lucide="copy" class="w-4 h-4"></i>
+                                </button>
+                                <button onclick="openConfirmClearModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all" title="Kelola / Hapus riwayat...">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Daftar Log Minum -->
+                        <div id="drinkHistoryList" class="space-y-2 max-h-56 overflow-y-auto pr-1 flex-1">
+                            <!-- Diisi otomatis via JavaScript -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Quick Action Bar: Mulai Sesi Kerja Sekaligus -->
+        <footer class="bg-white rounded-2xl p-4 border border-slate-200/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs text-slate-600 shadow-sm">
+            <div class="flex items-center gap-3">
+                <span class="p-2.5 rounded-xl bg-cobalt-light text-cobalt border border-cobalt-border">
+                    <i data-lucide="cloud-cog" class="w-4 h-4"></i>
+                </span>
+                <div>
+                    <strong class="text-slate-800">Sinkronisasi Akun Lintas Perangkat + Auto-Save Ganda:</strong>
+                    <p class="text-slate-500 text-[11px] mt-0.5" id="footerSyncInfo">Klik tombol <b>"Akun Sync"</b> di kanan atas untuk membuat ID Akun agar timer, checklist, dan riwayat otomatis tersinkron saat ganti laptop/HP.</p>
+                </div>
+            </div>
+            <button onclick="startAllWorkSession()" class="w-full md:w-auto px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all flex-shrink-0 shadow-sm">
+                <i data-lucide="rocket" class="w-4 h-4 text-amber-400"></i>
+                <span>Aktifkan Timer Minum + Fokus Sekaligus</span>
+            </button>
+        </footer>
+    </div>
+
+    <!-- MODAL AKUN CLOUD SYNC LINTAS PERANGKAT -->
+    <div id="accountModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 md:p-7 shadow-2xl border border-slate-100">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-cobalt-light text-cobalt flex items-center justify-center">
+                        <i data-lucide="cloud" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-extrabold text-slate-900">Akun Cloud Sync Lintas Device</h3>
+                        <p class="text-[11px] text-slate-500">Sinkronkan data real-time di Laptop, PC & HP</p>
+                    </div>
+                </div>
+                <button onclick="closeAccountModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Status Koneksi Saat Ini -->
+            <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 mb-4 space-y-1.5">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-slate-500 font-medium">Status Cloud Server:</span>
+                    <span id="cloudConnectionStatus" class="font-bold text-emerald-600 flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Siap Sinkronisasi
+                    </span>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-slate-500 font-medium">ID Akun Aktif:</span>
+                    <span id="currentActiveAccountLabel" class="font-extrabold text-cobalt">Mode Lokal (Belum Login)</span>
+                </div>
+                <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-200/60">
+                    <span>UID Perangkat:</span>
+                    <span id="deviceUidDisplay" class="font-mono text-[10px] text-slate-500 select-all">-</span>
+                </div>
+            </div>
+
+            <!-- Form Masuk / Buat Akun Sync -->
+            <form onsubmit="handleConnectCloudAccount(event)" class="space-y-3.5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Username / ID Akun Sync</label>
+                    <input type="text" id="syncAccountIdInput" placeholder="Contoh: kerja-produktif-01" required minlength="3"
+                        class="w-full text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-cobalt focus:ring-2 focus:ring-cobalt/15 bg-slate-50/70">
+                    <p class="text-[11px] text-slate-400 mt-1">Gunakan ID unik yang mudah diingat. Masukkan ID yang sama di perangkat lain untuk membuka datamu.</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">PIN Keamanan / Sandi Singkat (Opsional)</label>
+                    <input type="password" id="syncAccountPinInput" placeholder="Contoh: 1234 (Kosongkan jika tanpa PIN)"
+                        class="w-full text-xs font-semibold px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-cobalt focus:ring-2 focus:ring-cobalt/15 bg-slate-50/70">
+                    <p class="text-[11px] text-slate-400 mt-1">Jika diisi, perangkat lain wajib memasukkan ID dan PIN yang sama persis.</p>
+                </div>
+
+                <div class="pt-1 flex flex-col gap-2">
+                    <button type="submit" id="btnSubmitCloudSync" class="w-full py-3 px-4 rounded-xl bg-cobalt hover:bg-cobalt-hover text-white font-bold text-xs shadow-md shadow-cobalt/20 flex items-center justify-center gap-2 transition-all">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        <span>Hubungkan & Sinkronkan Akun Sekarang</span>
+                    </button>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" onclick="forcePushToCloudNow()" class="py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all" title="Unggah paksa data dari perangkat ini ke Cloud">
+                            <i data-lucide="upload-cloud" class="w-3.5 h-3.5 text-cobalt"></i>
+                            Simpan ke Cloud
+                        </button>
+                        <button type="button" onclick="forcePullFromCloudNow()" class="py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all" title="Ambil data terbaru dari Cloud ke perangkat ini">
+                            <i data-lucide="download-cloud" class="w-3.5 h-3.5 text-emerald-600"></i>
+                            Ambil dari Cloud
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Opsi Logout dari Cloud Akun -->
+            <div id="logoutAccountSection" class="mt-4 pt-3 border-t border-slate-100 hidden items-center justify-between">
+                <span class="text-[11px] text-slate-500">Ingin memutus sinkronisasi di perangkat ini?</span>
+                <button type="button" onclick="disconnectCloudAccount()" class="text-xs font-bold text-rose-600 hover:underline flex items-center gap-1">
+                    <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Keluar Akun
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 1: POPUP ALARM WAKTUNYA MINUM (1 JAM) -->
+    <div id="alarmModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl border border-slate-100 text-center alarm-active">
+            <div class="w-16 h-16 rounded-2xl bg-cobalt text-white flex items-center justify-center mx-auto mb-4 shadow-lg shadow-cobalt/30">
+                <i data-lucide="glass-water" class="w-9 h-9"></i>
+            </div>
+            <span class="inline-block px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold mb-2">
+                Pengingat Hidrasi 1 Jam
+            </span>
+            <h3 class="text-2xl font-extrabold text-slate-900">Waktunya Minum Air 💧</h3>
+            <p class="text-sm text-slate-600 mt-2 leading-relaxed">
+                Sudah 1 jam berlalu! Yuk minum segelas air putih dulu supaya otak tetap segar dan fokus kerjamu terjaga.
+            </p>
+
+            <div class="mt-6 space-y-2.5">
+                <button onclick="confirmDrinkFromModal()" class="w-full py-3.5 px-5 rounded-2xl bg-cobalt hover:bg-cobalt-hover text-white font-bold text-sm shadow-lg shadow-cobalt/25 flex items-center justify-center gap-2 transition-all">
+                    <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                    <span>Sudah Minum (+1 Gelas & Lanjut Timer)</span>
+                </button>
+                <div class="grid grid-cols-2 gap-2.5">
+                    <button onclick="snoozeAlarm(10)" class="py-3 px-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all">
+                        <i data-lucide="clock" class="w-4 h-4 text-slate-500"></i>
+                        Tunda 10 Menit
+                    </button>
+                    <button onclick="dismissAlarmOnly()" class="py-3 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all">
+                        Lewati & Ulangi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: POPUP ALARM FOKUS (2 JAM SELESAI) ATAU REST (30 MENIT SELESAI) -->
+    <div id="focusAlarmModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 md:p-8 shadow-2xl border border-slate-100 text-center alarm-active">
+            <div id="focusModalIconBox" class="w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-600/30">
+                <i data-lucide="coffee" id="focusModalIcon" class="w-9 h-9"></i>
+            </div>
+            <span id="focusModalBadge" class="inline-block px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-bold mb-2">
+                Sesi Fokus 2 Jam Selesai!
+            </span>
+            <h3 id="focusModalTitle" class="text-2xl font-extrabold text-slate-900">Waktunya Istirahat 30 Menit ☕</h3>
+            <p id="focusModalDesc" class="text-sm text-slate-600 mt-2 leading-relaxed">
+                Kerja bagus! Kamu sudah fokus penuh selama 2 jam. Sekarang regangkan badan, istirahatkan mata dari layar selama 30 menit.
+            </p>
+
+            <div class="mt-6 space-y-2.5">
+                <button id="btnFocusModalPrimary" onclick="confirmSwitchNextFocusPhase()" class="w-full py-3.5 px-5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 transition-all">
+                    <i data-lucide="play" class="w-5 h-5 fill-current"></i>
+                    <span id="focusModalPrimaryText">Mulai Istirahat 30 Menit Sekarang</span>
+                </button>
+                <button onclick="dismissFocusModalOnly()" class="w-full py-2.5 px-4 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 font-semibold text-xs transition-all">
+                    Tutup Peringatan & Atur Nanti
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: CADANGKAN & PULIHKAN DATA (.JSON) -->
+    <div id="backupModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-xl border border-slate-100">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="database-backup" class="w-5 h-5 text-cobalt"></i>
+                    <h3 class="text-base font-bold text-slate-900">Cadangkan & Pulihkan Data</h3>
+                </div>
+                <button onclick="closeBackupModal()" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-500 leading-relaxed mb-4">
+                Data aplikasimu otomatis tersimpan setiap detik di browser ini. Kamu juga bisa mengunduh file cadangan (`.json`) agar data aman jika pindah laptop/browser.
+            </p>
+
+            <div class="space-y-3">
+                <button onclick="downloadBackupJson()" class="w-full py-3 px-4 rounded-xl bg-cobalt hover:bg-cobalt-hover text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    Unduh File Cadangan (.json)
+                </button>
+
+                <div class="pt-3 border-t border-slate-100">
+                    <label class="block text-xs font-bold text-slate-700 mb-2">Pulihkan dari File Cadangan (.json):</label>
+                    <input type="file" id="restoreFileInput" accept=".json" onchange="handleRestoreFile(event)"
+                        class="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 cursor-pointer">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: UBAH TARGET & UKURAN GELAS -->
+    <div id="targetModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-xl border border-slate-100">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-bold text-slate-900">Pengaturan Target Hidrasi</h3>
+                <button onclick="closeTargetModal()" class="text-slate-400 hover:text-slate-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">Target Jumlah Gelas per Hari:</label>
+                    <div class="flex items-center justify-center gap-4 bg-slate-50 py-3 rounded-2xl border border-slate-200/70">
+                        <button onclick="adjustTargetInput(-1)" class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center font-bold text-lg hover:bg-slate-100">-</button>
+                        <div class="text-center min-w-[90px]">
+                            <span id="modalTargetValue" class="text-3xl font-extrabold text-cobalt">8</span>
+                            <span class="block text-[11px] text-slate-500 font-medium">Gelas / Hari</span>
+                        </div>
+                        <button onclick="adjustTargetInput(1)" class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center font-bold text-lg hover:bg-slate-100">+</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-2">Ukuran Standar 1 Gelas (ml):</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="selectModalCupSize(200)" class="cup-size-btn py-2 rounded-xl border text-xs font-bold" data-size="200">200 ml</button>
+                        <button onclick="selectModalCupSize(250)" class="cup-size-btn py-2 rounded-xl border text-xs font-bold" data-size="250">250 ml</button>
+                        <button onclick="selectModalCupSize(300)" class="cup-size-btn py-2 rounded-xl border text-xs font-bold" data-size="300">300 ml</button>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-xl bg-cobalt-light/60 text-center">
+                    <span class="text-xs text-slate-600">Total Target Volume Harian: </span>
+                    <strong id="modalTargetMl" class="text-xs font-extrabold text-cobalt">2000 ml</strong>
+                </div>
+            </div>
+
+            <button onclick="saveTargetModal()" class="w-full mt-5 py-3 rounded-xl bg-cobalt hover:bg-cobalt-hover text-white font-bold text-sm transition-all">
+                Simpan Pengaturan
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL 5: KONFIRMASI HAPUS RIWAYAT -->
+    <div id="confirmClearModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-xl border border-slate-100 text-center">
+            <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-3">
+                <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-900">Kelola Riwayat Minum</h3>
+            <p class="text-xs text-slate-500 mt-1 mb-5 leading-relaxed">
+                Riwayat minummu disimpan permanen agar tidak hilang. Pilih tindakan di bawah jika ingin mereset catatan:
+            </p>
+            <div class="space-y-2">
+                <button onclick="clearHistoryTodayOnly()" class="w-full py-2.5 px-4 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-xs transition-all">
+                    Hanya Reset Catatan Hari Ini
+                </button>
+                <button onclick="clearAllHistoryData()" class="w-full py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition-all">
+                    Hapus Seluruh Riwayat Permanen
+                </button>
+                <button onclick="closeConfirmClearModal()" class="w-full py-2.5 px-4 rounded-xl border border-slate-200 text-slate-600 font-semibold text-xs hover:bg-slate-50 transition-all">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Pemberitahuan Singkat -->
+    <div id="toastBox" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-lg text-xs font-semibold flex items-center gap-2.5">
+            <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+            <span id="toastMessage">Berhasil disimpan</span>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // 1. KONFIGURASI PENYIMPANAN GANDA (LOCALSTORAGE + INDEXEDDB)
+        // =========================================================================
+        const STORAGE_KEY_MASTER = 'pengingat_minum_persistent_v3';
+        const LEGACY_KEYS = ['pengingat_minum_persistent_v2', 'pengingat_minum_data_v1'];
+        const IDB_NAME = 'WorkspaceHidrasiFokusDB';
+        const IDB_STORE = 'app_state_store';
+
+        // Template Default Checklist "Tiap Kali Kerja Harus Ngapain Dulu"
+        const DEFAULT_CHECKLIST_ITEMS = [
+            { id: 'def_1', text: 'Siapkan segelas air putih / isi penuh tumbler di meja kerja', completed: false, category: 'routine' },
+            { id: 'def_2', text: 'Cek jadwal & tentukan 3 prioritas pekerjaan utama hari ini', completed: false, category: 'routine' },
+            { id: 'def_3', text: 'Buka workspace kerja & tutup tab browser yang mengganggu fokus', completed: false, category: 'routine' },
+            { id: 'def_4', text: 'Aktifkan Timer Minum (1 Jam) & Fokus Mode (2 Jam)', completed: false, category: 'routine' },
+            { id: 'def_5', text: 'Cek pesan/email penting sebelum masuk sesi deep work', completed: false, category: 'routine' }
+        ];
+
+        // State Utama Aplikasi
+        let appState = {
+            targetGlasses: 8,
+            cupSizeMl: 250,
+            drinkHistory: [],
+            checklist: [...DEFAULT_CHECKLIST_ITEMS],
+            checklistFilter: 'all', // 'all' | 'routine' | 'todo'
+            // Timer Pengingat Minum (1 Jam = 3600 detik)
+            timer: {
+                intervalMinutes: 60,
+                selectedDurationSeconds: 3600,
+                remainingSeconds: 3600,
+                isRunning: false,
+                targetEndTime: null,
+                isAlarmRinging: false
+            },
+            // Timer Fokus Kerja (2 Jam = 7200 detik) & Rest (30 Menit = 1800 detik)
+            focusTimer: {
+                phase: 'work', // 'work' (120 mnt) atau 'rest' (30 mnt)
+                workMinutes: 120,
+                restMinutes: 30,
+                selectedDurationSeconds: 7200,
+                remainingSeconds: 7200,
+                isRunning: false,
+                targetEndTime: null,
+                isAlarmRinging: false,
+                sessionsCompletedToday: 0,
+                lastSessionDate: ''
+            },
+            settings: {
+                isMuted: false,
+                preventAccidentalClose: true,
+                activeHistoryTab: 'today'
+            },
+            lastSavedAt: Date.now()
+        };
+
+        let masterLoopInterval = null;
+        let alarmSoundLoop = null;
+        let audioCtx = null;
+
+        // =========================================================================
+        // 2. INISIALISASI & RECOVERY DATA OTOMATIS SAAT HALAMAN DIBUKA
+        // =========================================================================
+        window.onload = async function () {
+            lucide.createIcons();
+            updateDateHeader();
+
+            // Muat dari LocalStorage + Sinkronisasi Cadangan IndexedDB
+            await loadPersistentStateWithRecovery();
+
+            // Pastikan penghitung sesi fokus harian di-reset jika ganti hari
+            checkFocusDailySessionReset();
+
+            // Sinkronisasi seluruh komponen UI
+            syncSoundButtonUI();
+            syncPreventCloseUI();
+            syncPresetButtonsUI();
+            renderChecklistUI();
+            renderHydrationUI();
+            checkNotificationStatus();
+
+            // Pulihkan jalannya kedua Timer (Minum & Fokus) jika sedang berjalan sebelum refresh/keluar
+            restoreDrinkTimerOnReload();
+            restoreFocusTimerOnReload();
+
+            // Jalankan Master Loop setiap detik untuk update kedua timer + Auto-Save Real-Time
+            if (masterLoopInterval) clearInterval(masterLoopInterval);
+            masterLoopInterval = setInterval(masterTickAndAutoSave, 1000);
+        };
+
+        // Simpan instan saat tab disembunyikan/diminimalkan
+        document.addEventListener('visibilitychange', function () {
+            syncActiveTimersRemaining();
+            savePersistentState(false);
+        });
+
+        // Simpan instan sebelum tab tertutup + cegah keluar tidak sengaja jika diaktifkan
+        window.addEventListener('beforeunload', function (e) {
+            syncActiveTimersRemaining();
+            savePersistentState(false);
+
+            const anyTimerRunning = appState.timer.isRunning || appState.focusTimer.isRunning;
+            if (appState.settings.preventAccidentalClose && anyTimerRunning) {
+                e.preventDefault();
+                e.returnValue = 'Timer masih berjalan. Data sudah tersimpan otomatis, yakin ingin menutup halaman?';
+                return e.returnValue;
+            }
+        });
+
+        function syncActiveTimersRemaining() {
+            const now = Date.now();
+            if (appState.timer.isRunning && appState.timer.targetEndTime) {
+                appState.timer.remainingSeconds = Math.max(0, Math.ceil((appState.timer.targetEndTime - now) / 1000));
+            }
+            if (appState.focusTimer.isRunning && appState.focusTimer.targetEndTime) {
+                appState.focusTimer.remainingSeconds = Math.max(0, Math.ceil((appState.focusTimer.targetEndTime - now) / 1000));
+            }
+        }
+
+        // IndexedDB Helper untuk lapis penyimpanan kedua (Anti-Hilang)
+        function openIndexedDB() {
+            return new Promise((resolve) => {
+                if (!window.indexedDB) return resolve(null);
+                const req = indexedDB.open(IDB_NAME, 1);
+                req.onupgradeneeded = function (e) {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(IDB_STORE)) {
+                        db.createObjectStore(IDB_STORE);
+                    }
+                };
+                req.onsuccess = function (e) { resolve(e.target.result); };
+                req.onerror = function () { resolve(null); };
+            });
+        }
+
+        async function saveToIndexedDB(stateData) {
+            try {
+                const db = await openIndexedDB();
+                if (!db) return;
+                const tx = db.transaction(IDB_STORE, 'readwrite');
+                tx.objectStore(IDB_STORE).put(stateData, 'master_state');
+            } catch (e) {
+                // Abaikan jika IndexedDB diblokir mode privat tertentu
+            }
+        }
+
+        async function readFromIndexedDB() {
+            try {
+                const db = await openIndexedDB();
+                if (!db) return null;
+                return new Promise((resolve) => {
+                    const tx = db.transaction(IDB_STORE, 'readonly');
+                    const req = tx.objectStore(IDB_STORE).get('master_state');
+                    req.onsuccess = () => resolve(req.result || null);
+                    req.onerror = () => resolve(null);
+                });
+            } catch (e) {
+                return null;
+            }
+        }
+
+        async function loadPersistentStateWithRecovery() {
+            let loadedState = null;
+
+            // 1. Coba baca dari LocalStorage terbaru
+            try {
+                const rawMaster = localStorage.getItem(STORAGE_KEY_MASTER);
+                if (rawMaster) {
+                    loadedState = JSON.parse(rawMaster);
+                } else {
+                    // Cek versi lama untuk migrasi mulus
+                    for (const key of LEGACY_KEYS) {
+                        const rawOld = localStorage.getItem(key);
+                        if (rawOld) {
+                            loadedState = JSON.parse(rawOld);
+                            break;
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Gagal membaca LocalStorage:", err);
+            }
+
+            // 2. Bandingkan dengan cadangan di IndexedDB (ambil yang paling baru jika ada)
+            const idbState = await readFromIndexedDB();
+            if (idbState && (!loadedState || (idbState.lastSavedAt || 0) > (loadedState.lastSavedAt || 0))) {
+                loadedState = idbState;
+            }
+
+            if (loadedState) {
+                mergeLoadedState(loadedState);
+            }
+            savePersistentState(false);
+        }
+
+        function mergeLoadedState(parsed) {
+            appState = {
+                ...appState,
+                ...parsed,
+                timer: { ...appState.timer, ...(parsed.timer || {}) },
+                focusTimer: { ...appState.focusTimer, ...(parsed.focusTimer || {}) },
+                settings: { ...appState.settings, ...(parsed.settings || {}) },
+                drinkHistory: Array.isArray(parsed.drinkHistory) ? parsed.drinkHistory : [],
+                checklist: Array.isArray(parsed.checklist) && parsed.checklist.length > 0
+                    ? parsed.checklist
+                    : [...DEFAULT_CHECKLIST_ITEMS]
+            };
+        }
+
+        function savePersistentState(animateBadge = true) {
+            try {
+                appState.lastSavedAt = Date.now();
+                const serialized = JSON.stringify(appState);
+                localStorage.setItem(STORAGE_KEY_MASTER, serialized);
+                saveToIndexedDB(appState);
+
+                const timeStr = new Date(appState.lastSavedAt).toLocaleTimeString('id-ID', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                const lastSavedEl = document.getElementById('lastSavedTimeText');
+                if (lastSavedEl) {
+                    lastSavedEl.textContent = `Tersimpan otomatis: ${timeStr}`;
+                }
+
+                if (animateBadge) {
+                    const badge = document.getElementById('saveStatusBadge');
+                    if (badge) {
+                        badge.classList.add('scale-105');
+                        setTimeout(() => badge.classList.remove('scale-105'), 180);
+                    }
+                }
+            } catch (err) {
+                console.error("Gagal menyimpan state:", err);
+            }
+        }
+
+        // Master Tick 1 Detik: Mengelola kedua timer & Auto-Save periodik
+        function masterTickAndAutoSave() {
+            let stateChanged = false;
+
+            if (appState.timer.isRunning) {
+                tickDrinkTimer();
+                stateChanged = true;
+            }
+            if (appState.focusTimer.isRunning) {
+                tickFocusTimer();
+                stateChanged = true;
+            }
+
+            updatePageTitleDynamic();
+
+            // Tetap simpan ke storage setiap detik saat timer jalan agar anti-reset
+            if (stateChanged) {
+                savePersistentState(false);
+            }
+        }
+
+        function updatePageTitleDynamic() {
+            if (appState.timer.isAlarmRinging) {
+                document.title = "🔔 WAKTUNYA MINUM AIR! 💧";
+                return;
+            }
+            if (appState.focusTimer.isAlarmRinging) {
+                document.title = appState.focusTimer.phase === 'work'
+                    ? "☕ WAKTUNYA ISTIRAHAT 30 MENIT!"
+                    : "🔥 WAKTUNYA KEMBALI FOKUS!";
+                return;
+            }
+
+            const parts = [];
+            if (appState.focusTimer.isRunning) {
+                const icon = appState.focusTimer.phase === 'work' ? '🔥' : '☕';
+                parts.push(`${icon} ${formatCompactTime(appState.focusTimer.remainingSeconds)}`);
+            }
+            if (appState.timer.isRunning) {
+                parts.push(`💧 ${formatCompactTime(appState.timer.remainingSeconds)}`);
+            }
+
+            if (parts.length > 0) {
+                document.title = `${parts.join(' | ')} - Workspace Kerja`;
+            } else {
+                document.title = "Workspace Hidrasi & Fokus Kerja 💧🔥";
+            }
+        }
+
+        function formatCompactTime(totalSecs) {
+            const hrs = Math.floor(totalSecs / 3600);
+            const mins = Math.floor((totalSecs % 3600) / 60);
+            const secs = totalSecs % 60;
+            if (hrs > 0) {
+                return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }
+            return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function getTodayDateString() {
+            const now = new Date();
+            return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        }
+
+        function getFormattedShortDate(dateObj = new Date()) {
+            return dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function updateDateHeader() {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('currentDateDisplay').textContent = new Date().toLocaleDateString('id-ID', options);
+        }
+
+        // =========================================================================
+        // 3. FITUR CHECKLIST PERSIAPAN KERJA & TO-DO HARIAN
+        // =========================================================================
+        function handleAddTask(e) {
+            e.preventDefault();
+            const input = document.getElementById('newTaskInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const categoryRadio = document.querySelector('input[name="taskCategory"]:checked');
+            const category = categoryRadio ? categoryRadio.value : 'routine';
+
+            const newItem = {
+                id: 'task_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                text: text,
+                completed: false,
+                category: category
+            };
+
+            appState.checklist.push(newItem);
+            input.value = '';
+            savePersistentState(true);
+            renderChecklistUI();
+            showToast("Item checklist berhasil ditambahkan & disimpan!");
+        }
+
+        function toggleChecklistItem(itemId) {
+            const item = appState.checklist.find(t => t.id === itemId);
+            if (!item) return;
+            item.completed = !item.completed;
+            savePersistentState(true);
+            renderChecklistUI();
+        }
+
+        function deleteChecklistItem(itemId) {
+            appState.checklist = appState.checklist.filter(t => t.id !== itemId);
+            savePersistentState(true);
+            renderChecklistUI();
+            showToast("Item checklist dihapus.");
+        }
+
+        function moveChecklistItem(itemId, direction) {
+            const idx = appState.checklist.findIndex(t => t.id === itemId);
+            if (idx === -1) return;
+            const targetIdx = idx + direction;
+            if (targetIdx < 0 || targetIdx >= appState.checklist.length) return;
+
+            const temp = appState.checklist[idx];
+            appState.checklist[idx] = appState.checklist[targetIdx];
+            appState.checklist[targetIdx] = temp;
+
+            savePersistentState(true);
+            renderChecklistUI();
+        }
+
+        function uncheckAllRoutineTasks() {
+            appState.checklist.forEach(item => {
+                item.completed = false;
+            });
+            savePersistentState(true);
+            renderChecklistUI();
+            showToast("Semua tanda ceklis di-reset untuk sesi kerja baru!");
+        }
+
+        function restoreDefaultRoutineTasks() {
+            const existingTexts = new Set(appState.checklist.map(i => i.text.toLowerCase()));
+            let added = 0;
+            DEFAULT_CHECKLIST_ITEMS.forEach(def => {
+                if (!existingTexts.has(def.text.toLowerCase())) {
+                    appState.checklist.push({
+                        ...def,
+                        id: 'def_' + Date.now() + '_' + Math.random().toString(36).substring(2, 5)
+                    });
+                    added++;
+                }
+            });
+            savePersistentState(true);
+            renderChecklistUI();
+            showToast(added > 0 ? `${added} ritual kerja standar ditambahkan!` : "Semua ritual standar sudah ada di daftar.");
+        }
+
+        function clearCompletedTodos() {
+            const beforeCount = appState.checklist.length;
+            // Hanya hapus kategori 'todo' yang sudah selesai, ritual tetap disimpan tapi di-uncheck
+            appState.checklist = appState.checklist.filter(item => !(item.category === 'todo' && item.completed));
+            const removed = beforeCount - appState.checklist.length;
+            savePersistentState(true);
+            renderChecklistUI();
+            showToast(removed > 0 ? `${removed} tugas selesai dibersihkan.` : "Tidak ada tugas harian selesai untuk dihapus.");
+        }
+
+        function switchChecklistFilter(filter) {
+            appState.checklistFilter = filter;
+            savePersistentState(false);
+            renderChecklistUI();
+        }
+
+        function renderChecklistUI() {
+            const allTasks = appState.checklist;
+            const routineTasks = allTasks.filter(t => t.category === 'routine');
+            const todoTasks = allTasks.filter(t => t.category === 'todo');
+
+            // Update counter pada tab
+            document.getElementById('badgeCountAllTasks').textContent = allTasks.length;
+            document.getElementById('badgeCountRoutineTasks').textContent = routineTasks.length;
+            document.getElementById('badgeCountTodoTasks').textContent = todoTasks.length;
+
+            // Highlight Tab Aktif
+            const activeTabClass = "flex-1 text-xs font-bold py-1.5 px-2 rounded-lg bg-white text-cobalt shadow-sm transition-all";
+            const inactiveTabClass = "flex-1 text-xs font-semibold py-1.5 px-2 rounded-lg text-slate-600 hover:text-slate-900 transition-all";
+            document.getElementById('tabChecklistRoutine').className = appState.checklistFilter === 'all' ? activeTabClass : inactiveTabClass;
+            document.getElementById('tabChecklistRitual').className = appState.checklistFilter === 'routine' ? activeTabClass : inactiveTabClass;
+            document.getElementById('tabChecklistTodo').className = appState.checklistFilter === 'todo' ? activeTabClass : inactiveTabClass;
+
+            // Hitung Progres Keseluruhan
+            const completedCount = allTasks.filter(t => t.completed).length;
+            const totalCount = allTasks.length;
+            const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+            document.getElementById('checklistProgressCount').textContent = `${completedCount}/${totalCount} Selesai (${pct}%)`;
+            document.getElementById('checklistProgressBar').style.width = `${pct}%`;
+
+            const motEl = document.getElementById('checklistMotivationText');
+            if (totalCount === 0) {
+                motEl.textContent = "Tambahkan ritual persiapan kerjamu di bawah.";
+            } else if (pct === 100) {
+                motEl.textContent = "Mantap! Semua persiapan & tugas beres — siap fokus penuh! 🚀";
+            } else if (pct >= 50) {
+                motEl.textContent = "Lebih dari separuh jalan! Selesaikan sisanya.";
+            } else {
+                motEl.textContent = "Yuk ceklis satu per satu ritual sebelum mulai kerja.";
+            }
+
+            // Filter daftar yang ditampilkan
+            let filtered = allTasks;
+            if (appState.checklistFilter === 'routine') filtered = routineTasks;
+            if (appState.checklistFilter === 'todo') filtered = todoTasks;
+
+            const container = document.getElementById('checklistContainer');
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-6 px-3 text-xs text-slate-400 bg-slate-50/70 rounded-2xl border border-dashed border-slate-200">
+                        Belum ada item di kategori ini. Tambahkan di kolom atas!
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map((item) => {
+                const badgeHtml = item.category === 'routine'
+                    ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">Ritual Kerja</span>`
+                    : `<span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-blue-50 text-cobalt border border-cobalt-border">Tugas</span>`;
+
+                return `
+                    <div class="flex items-start justify-between gap-2.5 p-3 rounded-2xl border ${item.completed ? 'bg-slate-50/60 border-slate-200/60' : 'bg-white border-slate-200 hover:border-cobalt/40'} transition-all group">
+                        <label class="flex items-start gap-2.5 flex-1 cursor-pointer select-none">
+                            <input type="checkbox" ${item.completed ? 'checked' : ''} onchange="toggleChecklistItem('${item.id}')"
+                                class="checkbox-custom mt-0.5 w-4 h-4 rounded text-emerald-600 border-slate-300 focus:ring-emerald-500 cursor-pointer">
+                            <div class="flex-1 text-xs font-semibold text-slate-800 leading-snug">
+                                <span>${escapeHtml(item.text)}</span>
+                                <div class="mt-1">${badgeHtml}</div>
+                            </div>
+                        </label>
+                        <div class="flex items-center gap-0.5 opacity-80 group-hover:opacity-100">
+                            <button onclick="moveChecklistItem('${item.id}', -1)" class="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100" title="Geser ke atas">
+                                <i data-lucide="chevron-up" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button onclick="moveChecklistItem('${item.id}', 1)" class="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100" title="Geser ke bawah">
+                                <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button onclick="deleteChecklistItem('${item.id}')" class="p-1 rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50" title="Hapus">
+                                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // =========================================================================
+        // 4. FITUR FOKUS MODE (2 JAM KERJA / 120 MNT) & REST (30 MENIT)
+        // =========================================================================
+        function checkFocusDailySessionReset() {
+            const today = getTodayDateString();
+            if (appState.focusTimer.lastSessionDate !== today) {
+                appState.focusTimer.sessionsCompletedToday = 0;
+                appState.focusTimer.lastSessionDate = today;
+                savePersistentState(false);
+            }
+        }
+
+        function restoreFocusTimerOnReload() {
+            if (appState.focusTimer.isAlarmRinging) {
+                appState.focusTimer.remainingSeconds = 0;
+                updateFocusTimerUI();
+                triggerFocusAlarm();
+                return;
+            }
+
+            if (appState.focusTimer.isRunning && appState.focusTimer.targetEndTime) {
+                const diff = Math.ceil((appState.focusTimer.targetEndTime - Date.now()) / 1000);
+                if (diff > 0) {
+                    appState.focusTimer.remainingSeconds = diff;
+                    updateFocusTimerUI();
+                } else {
+                    appState.focusTimer.remainingSeconds = 0;
+                    updateFocusTimerUI();
+                    triggerFocusAlarm();
+                }
+            } else {
+                updateFocusTimerUI();
+            }
+        }
+
+        function switchFocusPhase(newPhase, autoStart = false) {
+            pauseFocusTimer(false);
+            appState.focusTimer.phase = newPhase;
+            appState.focusTimer.isAlarmRinging = false;
+
+            const minutes = newPhase === 'work' ? appState.focusTimer.workMinutes : appState.focusTimer.restMinutes;
+            appState.focusTimer.selectedDurationSeconds = minutes * 60;
+            appState.focusTimer.remainingSeconds = minutes * 60;
+            appState.focusTimer.targetEndTime = null;
+
+            updateFocusTimerUI();
+            savePersistentState(true);
+
+            if (autoStart) {
+                startFocusTimer();
+            }
+        }
+
+        function toggleFocusTimer() {
+            initAudioContext();
+            if (appState.focusTimer.isRunning) {
+                pauseFocusTimer(true);
+            } else {
+                startFocusTimer();
+            }
+        }
+
+        function startFocusTimer() {
+            if (appState.focusTimer.remainingSeconds <= 0) {
+                const mins = appState.focusTimer.phase === 'work' ? appState.focusTimer.workMinutes : appState.focusTimer.restMinutes;
+                appState.focusTimer.selectedDurationSeconds = mins * 60;
+                appState.focusTimer.remainingSeconds = mins * 60;
+            }
+            appState.focusTimer.isRunning = true;
+            appState.focusTimer.isAlarmRinging = false;
+            appState.focusTimer.targetEndTime = Date.now() + (appState.focusTimer.remainingSeconds * 1000);
+
+            updateFocusTimerUI();
+            savePersistentState(true);
+        }
+
+        function pauseFocusTimer(save = true) {
+            if (appState.focusTimer.isRunning && appState.focusTimer.targetEndTime) {
+                appState.focusTimer.remainingSeconds = Math.max(0, Math.ceil((appState.focusTimer.targetEndTime - Date.now()) / 1000));
+            }
+            appState.focusTimer.isRunning = false;
+            appState.focusTimer.targetEndTime = null;
+
+            updateFocusTimerUI();
+            if (save) savePersistentState(true);
+        }
+
+        function resetFocusTimer() {
+            pauseFocusTimer(false);
+            const mins = appState.focusTimer.phase === 'work' ? appState.focusTimer.workMinutes : appState.focusTimer.restMinutes;
+            appState.focusTimer.selectedDurationSeconds = mins * 60;
+            appState.focusTimer.remainingSeconds = mins * 60;
+            appState.focusTimer.isAlarmRinging = false;
+            updateFocusTimerUI();
+            savePersistentState(true);
+            showToast("Timer Fokus/Rest berhasil di-reset.");
+        }
+
+        function skipFocusPhase() {
+            const nextPhase = appState.focusTimer.phase === 'work' ? 'rest' : 'work';
+            switchFocusPhase(nextPhase, false);
+            showToast(nextPhase === 'rest' ? "Berpindah ke Mode Istirahat (30 Menit) ☕" : "Berpindah ke Mode Fokus Kerja (2 Jam) 🔥");
+        }
+
+        function setFocusTest5Sec() {
+            pauseFocusTimer(false);
+            appState.focusTimer.selectedDurationSeconds = 5;
+            appState.focusTimer.remainingSeconds = 5;
+            startFocusTimer();
+            showToast("Simulasi Fokus/Rest 5 detik dimulai!");
+        }
+
+        function tickFocusTimer() {
+            if (!appState.focusTimer.isRunning || !appState.focusTimer.targetEndTime) return;
+            const diff = Math.ceil((appState.focusTimer.targetEndTime - Date.now()) / 1000);
+            if (diff > 0) {
+                appState.focusTimer.remainingSeconds = diff;
+                updateFocusTimerUI();
+            } else {
+                appState.focusTimer.remainingSeconds = 0;
+                updateFocusTimerUI();
+                triggerFocusAlarm();
+            }
+        }
+
+        function updateFocusTimerUI() {
+            const ft = appState.focusTimer;
+            const isWork = ft.phase === 'work';
+
+            // Tampilan angka waktu
+            const totalSecs = Math.max(0, ft.remainingSeconds);
+            const hrs = Math.floor(totalSecs / 3600);
+            const mins = Math.floor((totalSecs % 3600) / 60);
+            const secs = totalSecs % 60;
+            document.getElementById('focusCountdownDisplay').textContent =
+                `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+            // Counter sesi hari ini
+            document.getElementById('focusSessionsTodayCount').textContent = ft.sessionsCompletedToday || 0;
+
+            // Badge & Warna Tema Fokus vs Rest
+            const badge = document.getElementById('focusModeBadge');
+            const modeLabel = document.getElementById('focusModeLabel');
+            const modeIcon = document.getElementById('focusModeIcon');
+            const progressBar = document.getElementById('focusProgressBar');
+            const btnWork = document.getElementById('btnSelectFocusMode');
+            const btnRest = document.getElementById('btnSelectRestMode');
+            const startBtn = document.getElementById('btnFocusStartPause');
+            const startText = document.getElementById('focusStartPauseText');
+            const startIcon = document.getElementById('focusStartPauseIcon');
+            const nextInfo = document.getElementById('focusNextInfoText');
+
+            if (isWork) {
+                badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200";
+                modeLabel.textContent = "Mode Fokus Kerja (2 Jam)";
+                modeIcon.setAttribute('data-lucide', 'flame');
+                progressBar.className = "h-full bg-indigo-600 rounded-full transition-all duration-300";
+
+                btnWork.className = "py-1.5 px-3 rounded-lg text-xs font-bold bg-white text-indigo-700 shadow-sm flex items-center justify-center gap-1.5 transition-all";
+                btnRest.className = "py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 transition-all";
+            } else {
+                badge.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200";
+                modeLabel.textContent = "Mode Istirahat / Rest (30 Mnt)";
+                modeIcon.setAttribute('data-lucide', 'coffee');
+                progressBar.className = "h-full bg-emerald-500 rounded-full transition-all duration-300";
+
+                btnRest.className = "py-1.5 px-3 rounded-lg text-xs font-bold bg-white text-emerald-700 shadow-sm flex items-center justify-center gap-1.5 transition-all";
+                btnWork.className = "py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 transition-all";
+            }
+
+            // Progress Bar Width
+            const totalDur = ft.selectedDurationSeconds || (isWork ? 7200 : 1800);
+            const pct = Math.min(100, Math.max(0, (totalSecs / totalDur) * 100));
+            progressBar.style.width = `${pct}%`;
+
+            // Tombol Mulai / Jeda Fokus
+            if (ft.isRunning) {
+                startBtn.className = "col-span-2 py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5 transition-all";
+                startText.textContent = "Jeda";
+                startIcon.setAttribute('data-lucide', 'pause');
+
+                if (ft.targetEndTime) {
+                    const endStr = new Date(ft.targetEndTime).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                    nextInfo.textContent = isWork
+                        ? `Fokus berjalan • Jadwal istirahat pukul ${endStr}`
+                        : `Istirahat berjalan • Kembali kerja pukul ${endStr}`;
+                }
+            } else {
+                startBtn.className = isWork
+                    ? "col-span-2 py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 flex items-center justify-center gap-1.5 transition-all"
+                    : "col-span-2 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 flex items-center justify-center gap-1.5 transition-all";
+
+                const isFresh = totalSecs === totalDur;
+                startText.textContent = isFresh ? (isWork ? "Mulai Fokus" : "Mulai Rest") : "Lanjutkan";
+                startIcon.setAttribute('data-lucide', 'play');
+                nextInfo.textContent = isWork
+                    ? "2 Jam kerja fokus lalu istirahat 30 menit"
+                    : "Waktunya rehat 30 menit agar tidak burnout";
+            }
+
+            lucide.createIcons();
+        }
+
+        function triggerFocusAlarm() {
+            pauseFocusTimer(false);
+            appState.focusTimer.isAlarmRinging = true;
+
+            const finishedWork = appState.focusTimer.phase === 'work';
+            if (finishedWork) {
+                checkFocusDailySessionReset();
+                appState.focusTimer.sessionsCompletedToday = (appState.focusTimer.sessionsCompletedToday || 0) + 1;
+            }
+            savePersistentState(true);
+            updateFocusTimerUI();
+
+            // Siapkan isi Modal Focus/Rest
+            const modal = document.getElementById('focusAlarmModal');
+            const badge = document.getElementById('focusModalBadge');
+            const title = document.getElementById('focusModalTitle');
+            const desc = document.getElementById('focusModalDesc');
+            const primaryText = document.getElementById('focusModalPrimaryText');
+            const primaryBtn = document.getElementById('btnFocusModalPrimary');
+            const iconBox = document.getElementById('focusModalIconBox');
+            const icon = document.getElementById('focusModalIcon');
+
+            if (finishedWork) {
+                iconBox.className = "w-16 h-16 rounded-2xl bg-emerald-600 text-white flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-600/30";
+                icon.setAttribute('data-lucide', 'coffee');
+                badge.className = "inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold mb-2";
+                badge.textContent = "Sesi Fokus 2 Jam Selesai! 🎉";
+                title.textContent = "Waktunya Istirahat 30 Menit ☕";
+                desc.textContent = "Luar biasa! Kamu sudah menyelesaikan 2 jam fokus kerja. Yuk istirahat 30 menit, regangkan badan, dan minum air.";
+                primaryText.textContent = "Mulai Istirahat 30 Menit Sekarang";
+                primaryBtn.className = "w-full py-3.5 px-5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition-all";
+            } else {
+                iconBox.className = "w-16 h-16 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-600/30";
+                icon.setAttribute('data-lucide', 'flame');
+                badge.className = "inline-block px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-bold mb-2";
+                badge.textContent = "Waktu Istirahat 30 Menit Selesai!";
+                title.textContent = "Siap Kembali Fokus Kerja? 🔥";
+                desc.textContent = "Waktu istirahat 30 menit telah selesai. Yuk mulai sesi fokus 2 jam berikutnya dengan energi baru!";
+                primaryText.textContent = "Mulai Fokus 2 Jam Sekarang";
+                primaryBtn.className = "w-full py-3.5 px-5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 transition-all";
+            }
+
+            lucide.createIcons();
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            playFocusChime();
+            if (alarmSoundLoop) clearInterval(alarmSoundLoop);
+            alarmSoundLoop = setInterval(playFocusChime, 4200);
+
+            sendDesktopNotification(
+                finishedWork ? "Sesi Fokus 2 Jam Selesai! ☕" : "Istirahat 30 Menit Selesai! 🔥",
+                finishedWork ? "Waktunya istirahat 30 menit agar tetap segar." : "Yuk mulai sesi fokus kerja 2 jam berikutnya!"
+            );
+        }
+
+        function confirmSwitchNextFocusPhase() {
+            stopAllAlarmSounds();
+            document.getElementById('focusAlarmModal').classList.add('hidden');
+            document.getElementById('focusAlarmModal').classList.remove('flex');
+
+            const nextPhase = appState.focusTimer.phase === 'work' ? 'rest' : 'work';
+            switchFocusPhase(nextPhase, true);
+        }
+
+        function dismissFocusModalOnly() {
+            stopAllAlarmSounds();
+            document.getElementById('focusAlarmModal').classList.add('hidden');
+            document.getElementById('focusAlarmModal').classList.remove('flex');
+
+            const nextPhase = appState.focusTimer.phase === 'work' ? 'rest' : 'work';
+            switchFocusPhase(nextPhase, false);
+        }
+
+        // =========================================================================
+        // 5. LOGIKA TIMER PENGINGAT MINUM AIR (1 JAM SEKALI)
+        // =========================================================================
+        function restoreDrinkTimerOnReload() {
+            if (appState.timer.isAlarmRinging) {
+                appState.timer.remainingSeconds = 0;
+                updateTimerDisplay();
+                triggerAlarm();
+                return;
+            }
+
+            if (appState.timer.isRunning && appState.timer.targetEndTime) {
+                const diffSeconds = Math.ceil((appState.timer.targetEndTime - Date.now()) / 1000);
+                if (diffSeconds > 0) {
+                    appState.timer.remainingSeconds = diffSeconds;
+                    resumeRunningTimerUI();
+                } else {
+                    appState.timer.remainingSeconds = 0;
+                    updateTimerDisplay();
+                    triggerAlarm();
+                }
+            } else {
+                updateTimerDisplay();
+                updatePausedOrIdleUI();
+            }
+        }
+
+        function setDuration(minutes) {
+            pauseTimer(false);
+            appState.timer.intervalMinutes = minutes;
+            appState.timer.selectedDurationSeconds = minutes * 60;
+            appState.timer.remainingSeconds = minutes * 60;
+            appState.timer.targetEndTime = null;
+            appState.timer.isAlarmRinging = false;
+
+            syncPresetButtonsUI();
+            updateTimerDisplay();
+            updatePausedOrIdleUI();
+            savePersistentState(true);
+            showToast(`Interval minum diatur ke ${minutes} menit & disimpan.`);
+        }
+
+        function syncPresetButtonsUI() {
+            const currentMin = appState.timer.intervalMinutes;
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                if (!btn.dataset.minutes) return;
+                if (Number(btn.dataset.minutes) === currentMin && appState.timer.selectedDurationSeconds !== 5) {
+                    btn.className = "preset-btn text-[11px] font-semibold px-2 py-1 rounded-lg bg-white text-cobalt shadow-sm transition-all";
+                } else {
+                    btn.className = "preset-btn text-[11px] font-semibold px-2 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-all";
+                }
+            });
+        }
+
+        function setTestAlarm() {
+            pauseTimer(false);
+            appState.timer.selectedDurationSeconds = 5;
+            appState.timer.remainingSeconds = 5;
+            syncPresetButtonsUI();
+            updateTimerDisplay();
+            startTimer();
+            showToast("Simulasi alarm minum 5 detik dimulai!");
+        }
+
+        function toggleTimer() {
+            initAudioContext();
+            if (appState.timer.isRunning) {
+                pauseTimer(true);
+            } else {
+                startTimer();
+            }
+        }
+
+        function startTimer() {
+            if (appState.timer.remainingSeconds <= 0) {
+                appState.timer.remainingSeconds = appState.timer.selectedDurationSeconds;
+            }
+            appState.timer.isRunning = true;
+            appState.timer.isAlarmRinging = false;
+            appState.timer.targetEndTime = Date.now() + (appState.timer.remainingSeconds * 1000);
+
+            savePersistentState(true);
+            resumeRunningTimerUI();
+        }
+
+        function resumeRunningTimerUI() {
+            const startPauseBtn = document.getElementById('btnStartPause');
+            startPauseBtn.classList.replace('bg-cobalt', 'bg-amber-500');
+            startPauseBtn.classList.replace('hover:bg-cobalt-hover', 'hover:bg-amber-600');
+            document.getElementById('startPauseText').textContent = 'Jeda Minum';
+            document.getElementById('startPauseIcon').setAttribute('data-lucide', 'pause');
+            lucide.createIcons();
+
+            document.getElementById('timerStateLabel').textContent = 'Pengingat Minum Aktif';
+            document.getElementById('timerDot').className = 'w-2 h-2 rounded-full bg-emerald-500 animate-ping';
+
+            const nextTime = new Date(appState.timer.targetEndTime);
+            const nextTimeStr = nextTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('nextReminderText').textContent = `Jadwal minum berikutnya pukul ${nextTimeStr}`;
+
+            updateTimerDisplay();
+        }
+
+        function pauseTimer(save = true) {
+            if (appState.timer.isRunning && appState.timer.targetEndTime) {
+                const diff = Math.max(0, Math.ceil((appState.timer.targetEndTime - Date.now()) / 1000));
+                appState.timer.remainingSeconds = diff;
+            }
+            appState.timer.isRunning = false;
+            appState.timer.targetEndTime = null;
+
+            updatePausedOrIdleUI();
+            if (save) savePersistentState(true);
+        }
+
+        function updatePausedOrIdleUI() {
+            const startPauseBtn = document.getElementById('btnStartPause');
+            startPauseBtn.classList.replace('bg-amber-500', 'bg-cobalt');
+            startPauseBtn.classList.replace('hover:bg-amber-600', 'hover:bg-cobalt-hover');
+
+            const isFresh = appState.timer.remainingSeconds === appState.timer.selectedDurationSeconds;
+            document.getElementById('startPauseText').textContent = isFresh
+                ? `Mulai Timer (${appState.timer.intervalMinutes}m)`
+                : 'Lanjutkan';
+            document.getElementById('startPauseIcon').setAttribute('data-lucide', 'play');
+            lucide.createIcons();
+
+            document.getElementById('timerStateLabel').textContent = isFresh ? 'Pengingat Minum (1 Jam)' : 'Timer Minum Dijeda';
+            document.getElementById('timerDot').className = isFresh
+                ? 'w-2 h-2 rounded-full bg-cobalt'
+                : 'w-2 h-2 rounded-full bg-amber-500';
+            document.getElementById('nextReminderText').textContent = isFresh
+                ? `Siap mengingatkan setiap ${appState.timer.intervalMinutes} menit`
+                : 'Timer dijeda — klik Lanjutkan kapan saja';
+        }
+
+        function resetTimer() {
+            pauseTimer(false);
+            if (appState.timer.selectedDurationSeconds === 5) {
+                appState.timer.selectedDurationSeconds = appState.timer.intervalMinutes * 60;
+            }
+            appState.timer.remainingSeconds = appState.timer.selectedDurationSeconds;
+            appState.timer.isAlarmRinging = false;
+            syncPresetButtonsUI();
+            updateTimerDisplay();
+            updatePausedOrIdleUI();
+            savePersistentState(true);
+            showToast("Timer minum berhasil di-reset.");
+        }
+
+        function tickDrinkTimer() {
+            if (!appState.timer.isRunning || !appState.timer.targetEndTime) return;
+            const diffSeconds = Math.ceil((appState.timer.targetEndTime - Date.now()) / 1000);
+            if (diffSeconds > 0) {
+                appState.timer.remainingSeconds = diffSeconds;
+                updateTimerDisplay();
+            } else {
+                appState.timer.remainingSeconds = 0;
+                updateTimerDisplay();
+                triggerAlarm();
+            }
+        }
+
+        function updateTimerDisplay() {
+            const totalSecs = Math.max(0, appState.timer.remainingSeconds);
+            const hrs = Math.floor(totalSecs / 3600);
+            const mins = Math.floor((totalSecs % 3600) / 60);
+            const secs = totalSecs % 60;
+
+            const formatted = `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            document.getElementById('countdownDisplay').textContent = formatted;
+
+            const circle = document.getElementById('timerProgressCircle');
+            const circumference = 263.89;
+            const totalDuration = appState.timer.selectedDurationSeconds || 3600;
+            const fraction = Math.min(1, Math.max(0, totalSecs / totalDuration));
+            const offset = circumference - (fraction * circumference);
+            circle.style.strokeDashoffset = offset;
+        }
+
+        function startAllWorkSession() {
+            initAudioContext();
+            if (!appState.timer.isRunning) startTimer();
+            if (!appState.focusTimer.isRunning) startFocusTimer();
+            showToast("Timer Minum (1 Jam) & Fokus Mode (2 Jam) resmi berjalan! 🚀");
+        }
+
+        // =========================================================================
+        // 6. ALARM, AUDIO WEB API & NOTIFIKASI DESKTOP
+        // =========================================================================
+        function triggerAlarm() {
+            pauseTimer(false);
+            appState.timer.isAlarmRinging = true;
+            savePersistentState(true);
+
+            const modal = document.getElementById('alarmModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            playChime();
+            if (alarmSoundLoop) clearInterval(alarmSoundLoop);
+            alarmSoundLoop = setInterval(playChime, 4000);
+
+            sendDesktopNotification(
+                "Waktunya Minum Air! 💧",
+                "Sudah 1 jam bekerja. Yuk minum segelas air putih dulu supaya tetap fokus!"
+            );
+        }
+
+        function stopAllAlarmSounds() {
+            if (alarmSoundLoop) {
+                clearInterval(alarmSoundLoop);
+                alarmSoundLoop = null;
+            }
+            appState.timer.isAlarmRinging = false;
+            appState.focusTimer.isAlarmRinging = false;
+        }
+
+        function confirmDrinkFromModal() {
+            stopAllAlarmSounds();
+            document.getElementById('alarmModal').classList.add('hidden');
+            document.getElementById('alarmModal').classList.remove('flex');
+
+            addWaterIntake(appState.cupSizeMl, 'Pengingat 1 Jam');
+            if (appState.timer.selectedDurationSeconds === 5) {
+                appState.timer.selectedDurationSeconds = appState.timer.intervalMinutes * 60;
+            }
+            appState.timer.remainingSeconds = appState.timer.selectedDurationSeconds;
+            syncPresetButtonsUI();
+            startTimer();
+        }
+
+        function snoozeAlarm(minutes) {
+            stopAllAlarmSounds();
+            document.getElementById('alarmModal').classList.add('hidden');
+            document.getElementById('alarmModal').classList.remove('flex');
+
+            appState.timer.selectedDurationSeconds = minutes * 60;
+            appState.timer.remainingSeconds = minutes * 60;
+            startTimer();
+            showToast(`Pengingat minum ditunda ${minutes} menit.`);
+        }
+
+        function dismissAlarmOnly() {
+            stopAllAlarmSounds();
+            document.getElementById('alarmModal').classList.add('hidden');
+            document.getElementById('alarmModal').classList.remove('flex');
+
+            if (appState.timer.selectedDurationSeconds === 5) {
+                appState.timer.selectedDurationSeconds = appState.timer.intervalMinutes * 60;
+            }
+            appState.timer.remainingSeconds = appState.timer.selectedDurationSeconds;
+            syncPresetButtonsUI();
+            startTimer();
+        }
+
+        function initAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) audioCtx = new AudioContextClass();
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Bunyi Chime Segar untuk Minum Air
+        function playChime(forcePlay = false) {
+            if (appState.settings.isMuted && !forcePlay) return;
+            initAudioContext();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            notes.forEach((freq, idx) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now + idx * 0.14);
+                gain.gain.setValueAtTime(0.001, now + idx * 0.14);
+                gain.gain.exponentialRampToValueAtTime(0.25, now + idx * 0.14 + 0.04);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.14 + 0.65);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now + idx * 0.14);
+                osc.stop(now + idx * 0.14 + 0.7);
+            });
+        }
+
+        // Bunyi Harmoni Berbeda untuk Fokus / Istirahat Selesai
+        function playFocusChime() {
+            if (appState.settings.isMuted) return;
+            initAudioContext();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+            const notes = [440, 554.37, 659.25, 880];
+            notes.forEach((freq, idx) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, now + idx * 0.18);
+                gain.gain.setValueAtTime(0.001, now + idx * 0.18);
+                gain.gain.exponentialRampToValueAtTime(0.28, now + idx * 0.18 + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.18 + 0.75);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now + idx * 0.18);
+                osc.stop(now + idx * 0.18 + 0.8);
+            });
+        }
+
+        function toggleMute() {
+            appState.settings.isMuted = !appState.settings.isMuted;
+            syncSoundButtonUI();
+            savePersistentState(true);
+            if (!appState.settings.isMuted) {
+                playChime(true);
+                showToast('Suara pengingat diaktifkan');
+            } else {
+                showToast('Suara pengingat dibisukan');
+            }
+        }
+
+        function syncSoundButtonUI() {
+            const icon = document.getElementById('soundIcon');
+            const text = document.getElementById('soundStatusText');
+            if (appState.settings.isMuted) {
+                icon.setAttribute('data-lucide', 'volume-x');
+                icon.classList.replace('text-cobalt', 'text-rose-500');
+                text.textContent = 'Suara OFF';
+            } else {
+                icon.setAttribute('data-lucide', 'volume-2');
+                icon.classList.replace('text-rose-500', 'text-cobalt');
+                text.textContent = 'Suara ON';
+            }
+            lucide.createIcons();
+        }
+
+        function togglePreventClose() {
+            appState.settings.preventAccidentalClose = !appState.settings.preventAccidentalClose;
+            syncPreventCloseUI();
+            savePersistentState(true);
+            showToast(appState.settings.preventAccidentalClose
+                ? "Proteksi Tab Aktif: Mencegah tab tertutup tidak sengaja saat timer jalan."
+                : "Proteksi Tab Dinonaktifkan.");
+        }
+
+        function syncPreventCloseUI() {
+            const btn = document.getElementById('btnPreventClose');
+            const text = document.getElementById('preventCloseText');
+            if (appState.settings.preventAccidentalClose) {
+                btn.className = "text-xs font-semibold px-3 py-2 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 flex items-center gap-1.5 transition-all";
+                text.textContent = "Proteksi Tab: ON";
+            } else {
+                btn.className = "text-xs font-semibold px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 flex items-center gap-1.5 transition-all";
+                text.textContent = "Proteksi Tab: OFF";
+            }
+        }
+
+        function checkNotificationStatus() {
+            const btnText = document.getElementById('notifStatusText');
+            const btn = document.getElementById('btnNotificationPerm');
+            if (!("Notification" in window)) {
+                btnText.textContent = "Notif Tidak Didukung";
+                btn.disabled = true;
+                return;
+            }
+            if (Notification.permission === "granted") {
+                btnText.textContent = "Notifikasi Aktif";
+                btn.classList.add('border-emerald-200', 'bg-emerald-50', 'text-emerald-700');
+            } else if (Notification.permission === "denied") {
+                btnText.textContent = "Notifikasi Diblokir";
+            }
+        }
+
+        function requestNotificationPermission() {
+            if (!("Notification" in window)) {
+                showToast("Browser ini tidak mendukung notifikasi desktop.");
+                return;
+            }
+            Notification.requestPermission().then(permission => {
+                checkNotificationStatus();
+                if (permission === "granted") {
+                    showToast("Notifikasi desktop aktif!");
+                    new Notification("Workspace Hidrasi & Fokus Kerja 💧🔥", {
+                        body: "Kami akan memberi tahu saat waktunya minum air atau istirahat kerja.",
+                    });
+                }
+            });
+        }
+
+        function sendDesktopNotification(title, bodyText) {
+            if ("Notification" in window && Notification.permission === "granted") {
+                const notif = new Notification(title, {
+                    body: bodyText,
+                    requireInteraction: true
+                });
+                notif.onclick = function () {
+                    window.focus();
+                    this.close();
+                };
+            }
+        }
+
+        // =========================================================================
+        // 7. PENCATAT HIDRASI & RIWAYAT PERMANEN
+        // =========================================================================
+        function addWaterIntake(amountMl, noteLabel = 'Gelas Standar') {
+            const now = new Date();
+            const entry = {
+                id: 'drink_' + now.getTime() + '_' + Math.random().toString(36).substring(2, 6),
+                date: getTodayDateString(),
+                dateLabel: getFormattedShortDate(now),
+                time: now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+                ml: Number(amountMl) || 250,
+                note: noteLabel
+            };
+
+            appState.drinkHistory.unshift(entry);
+            savePersistentState(true);
+            renderHydrationUI();
+            showToast(`+${entry.ml} ml dicatat & disimpan otomatis! 💧`);
+        }
+
+        function deleteSingleHistoryEntry(entryId) {
+            const idx = appState.drinkHistory.findIndex(item => item.id === entryId);
+            if (idx !== -1) {
+                const removed = appState.drinkHistory.splice(idx, 1)[0];
+                savePersistentState(true);
+                renderHydrationUI();
+                showToast(`Catatan ${removed.ml} ml (${removed.time}) dihapus.`);
+            }
+        }
+
+        function switchHistoryTab(tabName) {
+            appState.settings.activeHistoryTab = tabName;
+            savePersistentState(false);
+            renderHydrationUI();
+        }
+
+        function renderHydrationUI() {
+            const todayStr = getTodayDateString();
+            const todayLogs = appState.drinkHistory.filter(item => item.date === todayStr);
+            const allLogs = appState.drinkHistory;
+
+            const totalMlToday = todayLogs.reduce((sum, item) => sum + (Number(item.ml) || 0), 0);
+            const cupSize = appState.cupSizeMl || 250;
+            const targetGlasses = appState.targetGlasses || 8;
+            const targetMl = targetGlasses * cupSize;
+
+            const rawGlassEquivalent = totalMlToday / cupSize;
+            const glassCountText = Number.isInteger(rawGlassEquivalent)
+                ? rawGlassEquivalent
+                : rawGlassEquivalent.toFixed(1).replace('.0', '');
+
+            const percentage = Math.min(100, Math.round((totalMlToday / targetMl) * 100));
+
+            document.getElementById('cupSizeLabel').textContent = `${cupSize} ml`;
+            document.getElementById('mainAddButtonText').textContent = `+1 Gelas Sudah Minum (${cupSize} ml)`;
+            document.getElementById('glassCountDisplay').textContent = glassCountText;
+            document.getElementById('targetGlassDisplay').textContent = targetGlasses;
+            document.getElementById('mlCountDisplay').textContent = totalMlToday;
+            document.getElementById('targetMlDisplay').textContent = targetMl;
+
+            document.getElementById('waterFillElement').style.height = `${percentage}%`;
+            document.getElementById('waterPercentageText').textContent = `${percentage}%`;
+
+            document.getElementById('countTodayBadge').textContent = todayLogs.length;
+            document.getElementById('countAllBadge').textContent = allLogs.length;
+
+            const tabTodayBtn = document.getElementById('tabTodayBtn');
+            const tabAllBtn = document.getElementById('tabAllBtn');
+            if (appState.settings.activeHistoryTab === 'all') {
+                tabAllBtn.className = "text-xs font-bold px-2.5 py-1 rounded-lg bg-white text-cobalt shadow-sm transition-all";
+                tabTodayBtn.className = "text-xs font-semibold px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-all";
+            } else {
+                tabTodayBtn.className = "text-xs font-bold px-2.5 py-1 rounded-lg bg-white text-cobalt shadow-sm transition-all";
+                tabAllBtn.className = "text-xs font-semibold px-2.5 py-1 rounded-lg text-slate-600 hover:text-slate-900 transition-all";
+            }
+
+            const motivationEl = document.getElementById('hydrationMotivation');
+            if (totalMlToday === 0) {
+                motivationEl.textContent = "Yuk mulai minum gelas pertamamu hari ini!";
+            } else if (percentage < 50) {
+                motivationEl.textContent = "Awal yang bagus! Jaga ritme minum tiap jam.";
+            } else if (percentage < 100) {
+                motivationEl.textContent = "Lebih dari setengah target harian tercapai!";
+            } else {
+                motivationEl.textContent = "Luar biasa! Target hidrasi harianmu tercapai! 🎉";
+            }
+
+            const listEl = document.getElementById('drinkHistoryList');
+            const logsToDisplay = appState.settings.activeHistoryTab === 'all' ? allLogs : todayLogs;
+
+            if (logsToDisplay.length === 0) {
+                const emptyText = appState.settings.activeHistoryTab === 'all'
+                    ? "Belum ada riwayat minum yang tercatat."
+                    : "Belum ada catatan minum hari ini.";
+                listEl.innerHTML = `
+                    <div class="text-center py-6 px-4 text-xs text-slate-400 bg-slate-50/60 rounded-2xl border border-dashed border-slate-200">
+                        ${emptyText}
+                    </div>
+                `;
+            } else {
+                listEl.innerHTML = logsToDisplay.map((item, idx) => {
+                    const isToday = item.date === todayStr;
+                    const badgeDate = isToday ? 'Hari Ini' : (item.dateLabel || item.date);
+                    return `
+                        <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-200/60 text-xs transition-all group">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-6 h-6 rounded-lg bg-cobalt-light text-cobalt font-extrabold flex items-center justify-center text-[10px]">
+                                    #${logsToDisplay.length - idx}
+                                </span>
+                                <div>
+                                    <div class="font-bold text-slate-800 flex items-center gap-1.5">
+                                        <span>+${item.ml} ml</span>
+                                        <span class="text-[11px] font-medium text-slate-400">• ${escapeHtml(item.note || 'Air Putih')}</span>
+                                    </div>
+                                    <div class="text-[10px] text-slate-400 font-medium">
+                                        ${badgeDate}, Pukul ${item.time}
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="deleteSingleHistoryEntry('${item.id}')" class="p-1 rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-all" title="Hapus catatan ini">
+                                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+                lucide.createIcons();
+            }
+        }
+
+        // =========================================================================
+        // 8. BACKUP & RESTORE DATA (.JSON) SERTA MODAL PENGATURAN
+        // =========================================================================
+        function openBackupModal() {
+            const modal = document.getElementById('backupModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeBackupModal() {
+            const modal = document.getElementById('backupModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function downloadBackupJson() {
+            syncActiveTimersRemaining();
+            savePersistentState(false);
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+            const downloadAnchor = document.createElement('a');
+            const dateStr = getTodayDateString();
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `backup_hidrasi_fokus_${dateStr}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+
+            showToast("File cadangan (.json) berhasil diunduh!");
+        }
+
+        function handleRestoreFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    mergeLoadedState(imported);
+                    savePersistentState(true);
+
+                    syncSoundButtonUI();
+                    syncPreventCloseUI();
+                    syncPresetButtonsUI();
+                    renderChecklistUI();
+                    renderHydrationUI();
+                    restoreDrinkTimerOnReload();
+                    restoreFocusTimerOnReload();
+
+                    closeBackupModal();
+                    showToast("Data berhasil dipulihkan dari file cadangan!");
+                } catch (err) {
+                    showToast("Format file JSON tidak valid.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportHistoryData() {
+            if (appState.drinkHistory.length === 0) {
+                showToast("Belum ada riwayat minum untuk disalin.");
+                return;
+            }
+            const lines = appState.drinkHistory.map((item, idx) =>
+                `${idx + 1}. [${item.dateLabel || item.date} - ${item.time}] +${item.ml} ml (${item.note || 'Air Putih'})`
+            );
+            const summaryText = `Riwayat Hidrasi (${appState.drinkHistory.length} Catatan):\n` + lines.join('\n');
+
+            const tempArea = document.createElement('textarea');
+            tempArea.value = summaryText;
+            document.body.appendChild(tempArea);
+            tempArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempArea);
+
+            showToast("Ringkasan riwayat berhasil disalin ke Clipboard!");
+        }
+
+        function openConfirmClearModal() {
+            const modal = document.getElementById('confirmClearModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeConfirmClearModal() {
+            const modal = document.getElementById('confirmClearModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function clearHistoryTodayOnly() {
+            const todayStr = getTodayDateString();
+            appState.drinkHistory = appState.drinkHistory.filter(item => item.date !== todayStr);
+            savePersistentState(true);
+            renderHydrationUI();
+            closeConfirmClearModal();
+            showToast("Catatan minum hari ini telah direset.");
+        }
+
+        function clearAllHistoryData() {
+            appState.drinkHistory = [];
+            savePersistentState(true);
+            renderHydrationUI();
+            closeConfirmClearModal();
+            showToast("Seluruh riwayat minum telah dihapus.");
+        }
+
+        // Modal Target Hidrasi
+        let tempTargetGlasses = 8;
+        let tempCupSizeMl = 250;
+
+        function openTargetModal() {
+            tempTargetGlasses = appState.targetGlasses || 8;
+            tempCupSizeMl = appState.cupSizeMl || 250;
+            updateTargetModalUI();
+            const modal = document.getElementById('targetModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeTargetModal() {
+            const modal = document.getElementById('targetModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function adjustTargetInput(delta) {
+            tempTargetGlasses = Math.max(1, Math.min(25, tempTargetGlasses + delta));
+            updateTargetModalUI();
+        }
+
+        function selectModalCupSize(sizeMl) {
+            tempCupSizeMl = sizeMl;
+            updateTargetModalUI();
+        }
+
+        function updateTargetModalUI() {
+            document.getElementById('modalTargetValue').textContent = tempTargetGlasses;
+            document.getElementById('modalTargetMl').textContent = `${tempTargetGlasses * tempCupSizeMl} ml`;
+
+            document.querySelectorAll('.cup-size-btn').forEach(btn => {
+                if (Number(btn.dataset.size) === tempCupSizeMl) {
+                    btn.className = "cup-size-btn py-2 rounded-xl border border-cobalt bg-cobalt-light text-cobalt text-xs font-bold transition-all";
+                } else {
+                    btn.className = "cup-size-btn py-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 text-xs font-bold transition-all";
+                }
+            });
+        }
+
+        function saveTargetModal() {
+            appState.targetGlasses = tempTargetGlasses;
+            appState.cupSizeMl = tempCupSizeMl;
+            savePersistentState(true);
+            renderHydrationUI();
+            closeTargetModal();
+            showToast(`Target disimpan: ${tempTargetGlasses} gelas (${tempTargetGlasses * tempCupSizeMl} ml/hari).`);
+        }
+
+        // Toast Helper
+        let toastTimeout = null;
+        function showToast(message) {
+            const toast = document.getElementById('toastBox');
+            document.getElementById('toastMessage').textContent = message;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3200);
+        }
+
+        // =========================================================================
+        // 9. UI CONTROLLER UNTUK AKUN CLOUD SYNC (GLOBAL HANDLERS)
+        // =========================================================================
+        const ACCOUNT_META_KEY = 'pengingat_minum_cloud_account_v1';
+        let cloudAccountMeta = {
+            accountId: '',
+            pinHash: '',
+            rawPinPreview: '',
+            isConnected: false,
+            lastCloudSyncAt: null
+        };
+
+        function loadSavedAccountMeta() {
+            try {
+                const raw = localStorage.getItem(ACCOUNT_META_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    cloudAccountMeta = { ...cloudAccountMeta, ...parsed };
+                }
+            } catch (e) {
+                console.error("Gagal memuat metadata akun:", e);
+            }
+            updateAccountBadgeUI();
+        }
+
+        function saveAccountMeta() {
+            try {
+                localStorage.setItem(ACCOUNT_META_KEY, JSON.stringify(cloudAccountMeta));
+            } catch (e) {}
+            updateAccountBadgeUI();
+        }
+
+        function normalizeAccountKey(accountId, pin) {
+            const cleanId = String(accountId || '')
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-z0-9_-]/g, '-');
+            const cleanPin = String(pin || '').trim();
+            if (!cleanId) return '';
+            if (!cleanPin) return `acc_${cleanId}`;
+            // Simple deterministic hash untuk mengunci dokumen dengan PIN
+            let hash = 0;
+            const combo = `${cleanId}::${cleanPin}`;
+            for (let i = 0; i < combo.length; i++) {
+                hash = ((hash << 5) - hash) + combo.charCodeAt(i);
+                hash |= 0;
+            }
+            return `acc_${cleanId}_p${Math.abs(hash)}`;
+        }
+
+        function openAccountModal() {
+            loadSavedAccountMeta();
+            const idInput = document.getElementById('syncAccountIdInput');
+            const pinInput = document.getElementById('syncAccountPinInput');
+            if (idInput) idInput.value = cloudAccountMeta.accountId || '';
+            if (pinInput) pinInput.value = cloudAccountMeta.rawPinPreview || '';
+
+            const modal = document.getElementById('accountModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            lucide.createIcons();
+        }
+
+        function closeAccountModal() {
+            const modal = document.getElementById('accountModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function updateAccountBadgeUI() {
+            const badgeText = document.getElementById('accountBadgeText');
+            const activeLabel = document.getElementById('currentActiveAccountLabel');
+            const logoutSection = document.getElementById('logoutAccountSection');
+            const footerInfo = document.getElementById('footerSyncInfo');
+
+            if (cloudAccountMeta.isConnected && cloudAccountMeta.accountId) {
+                if (badgeText) badgeText.textContent = `Akun: ${cloudAccountMeta.accountId}`;
+                if (activeLabel) activeLabel.textContent = `${cloudAccountMeta.accountId} (Tersinkron Cloud)`;
+                if (logoutSection) {
+                    logoutSection.classList.remove('hidden');
+                    logoutSection.classList.add('flex');
+                }
+                if (footerInfo) {
+                    footerInfo.innerHTML = `Terhubung ke Akun Cloud <b>"${escapeHtml(cloudAccountMeta.accountId)}"</b>. Buka halaman ini di perangkat lain & masukkan ID Akun yang sama untuk sinkronisasi otomatis.`;
+                }
+            } else {
+                if (badgeText) badgeText.textContent = 'Akun Sync: Lokal';
+                if (activeLabel) activeLabel.textContent = 'Mode Lokal (Belum Terhubung Cloud)';
+                if (logoutSection) {
+                    logoutSection.classList.add('hidden');
+                    logoutSection.classList.remove('flex');
+                }
+                if (footerInfo) {
+                    footerInfo.innerHTML = `Klik tombol <b>"Akun Sync"</b> di kanan atas untuk memasukkan ID Akun agar timer, checklist, dan riwayat otomatis tersinkron saat ganti laptop/HP.`;
+                }
+            }
+        }
+
+        function handleConnectCloudAccount(e) {
+            e.preventDefault();
+            const rawId = document.getElementById('syncAccountIdInput').value.trim();
+            const rawPin = document.getElementById('syncAccountPinInput').value.trim();
+            if (!rawId || rawId.length < 3) {
+                showToast("ID Akun minimal 3 karakter.");
+                return;
+            }
+
+            const docKey = normalizeAccountKey(rawId, rawPin);
+            cloudAccountMeta.accountId = rawId.toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+            cloudAccountMeta.pinHash = docKey;
+            cloudAccountMeta.rawPinPreview = rawPin;
+            cloudAccountMeta.isConnected = true;
+            saveAccountMeta();
+
+            if (typeof window.connectToCloudDocument === 'function') {
+                window.connectToCloudDocument(docKey, true);
+            } else {
+                showToast("Profil Akun disimpan! Akan otomatis tersinkron saat terhubung ke server.");
+            }
+            closeAccountModal();
+        }
+
+        function disconnectCloudAccount() {
+            if (typeof window. stopCloudSubscription === 'function') {
+                window.stopCloudSubscription();
+            }
+            cloudAccountMeta = {
+                accountId: '',
+                pinHash: '',
+                rawPinPreview: '',
+                isConnected: false,
+                lastCloudSyncAt: null
+            };
+            saveAccountMeta();
+            closeAccountModal();
+            showToast("Akun Cloud diputuskan di perangkat ini. Data lokal tetap aman.");
+        }
+
+        function forcePushToCloudNow() {
+            if (!cloudAccountMeta.isConnected || !cloudAccountMeta.pinHash) {
+                showToast("Masukkan ID Akun dan klik Hubungkan terlebih dahulu!");
+                return;
+            }
+            if (typeof window.pushStateToCloud === 'function') {
+                window.pushStateToCloud(true);
+            }
+        }
+
+        function forcePullFromCloudNow() {
+            if (!cloudAccountMeta.isConnected || !cloudAccountMeta.pinHash) {
+                showToast("Masukkan ID Akun dan klik Hubungkan terlebih dahulu!");
+                return;
+            }
+            if (typeof window.pullStateFromCloud === 'function') {
+                window.pullStateFromCloud(true);
+            }
+        }
+
+        // Hook ke savePersistentState agar setiap perubahan langsung dikirim ke Cloud (debounced)
+        const originalSavePersistentState = savePersistentState;
+        let cloudPushDebounceTimer = null;
+        savePersistentState = function (animateBadge = true) {
+            originalSavePersistentState(animateBadge);
+            if (cloudAccountMeta.isConnected && typeof window.pushStateToCloud === 'function') {
+                if (cloudPushDebounceTimer) clearTimeout(cloudPushDebounceTimer);
+                cloudPushDebounceTimer = setTimeout(() => {
+                    window.pushStateToCloud(false);
+                }, 650);
+            }
+        };
+
+        // Muat metadata akun saat startup
+        loadSavedAccountMeta();
+    </script>
+
+    <!-- =========================================================================
+         10. MODUL FIREBASE CLOUD SYNC (REAL-TIME CROSS-DEVICE SYNC)
+         ========================================================================= -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        let db = null;
+        let auth = null;
+        let currentUser = null;
+        let activeUnsubscribe = null;
+        let isApplyingRemoteUpdate = false;
+        let lastPushedTimestamp = 0;
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'workspace-hidrasi-fokus-app';
+
+        async function initFirebaseCloudSync() {
+            const statusEl = document.getElementById('cloudConnectionStatus');
+            const uidEl = document.getElementById('deviceUidDisplay');
+
+            try {
+                if (typeof __firebase_config === 'undefined' || !__firebase_config) {
+                    if (statusEl) {
+                        statusEl.className = "font-bold text-amber-600 flex items-center gap-1";
+                        statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> Mode Offline / File Lokal`;
+                    }
+                    return;
+                }
+
+                const firebaseConfig = JSON.parse(__firebase_config);
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // RULE 3: Auth Before Queries
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    currentUser = user;
+                    if (user && uidEl) {
+                        uidEl.textContent = user.uid;
+                    }
+                    if (user && statusEl) {
+                        statusEl.className = "font-bold text-emerald-600 flex items-center gap-1";
+                        statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Terhubung ke Cloud`;
+                    }
+
+                    // Jika sebelumnya sudah login ke ID Akun tertentu, otomatis sambungkan ulang
+                    if (user && cloudAccountMeta.isConnected && cloudAccountMeta.pinHash) {
+                        connectToCloudDocument(cloudAccountMeta.pinHash, false);
+                    }
+                });
+            } catch (err) {
+                console.error("Inisialisasi Cloud Sync gagal:", err);
+                if (statusEl) {
+                    statusEl.className = "font-bold text-amber-600 flex items-center gap-1";
+                    statusEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500"></span> Penyimpanan Lokal Aktif`;
+                }
+            }
+        }
+
+        // Fungsi menghubungkan ke dokumen akun di koleksi publik berdasarkan ID Akun + PIN Hash
+        window.connectToCloudDocument = async function (docKey, showNotification = true) {
+            if (!db || !currentUser) {
+                if (showNotification) {
+                    showToast("Menyiapkan koneksi Cloud... Pastikan terhubung ke internet.");
+                }
+                return;
+            }
+
+            if (activeUnsubscribe) {
+                activeUnsubscribe();
+                activeUnsubscribe = null;
+            }
+
+            // RULE 1: Strict Paths (/artifacts/{appId}/public/data/{collectionName}/{docId})
+            const accountDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'synced_workspaces', docKey);
+
+            try {
+                const snap = await getDoc(accountDocRef);
+                if (snap.exists()) {
+                    const cloudData = snap.data();
+                    if (cloudData && cloudData.payloadJson) {
+                        const remoteState = JSON.parse(cloudData.payloadJson);
+                        applyRemoteCloudState(remoteState);
+                        if (showNotification) {
+                            showToast(`Berhasil masuk ke Akun "${cloudAccountMeta.accountId}"! Data disinkronkan. ☁️`);
+                        }
+                    }
+                } else {
+                    // Akun baru: unggah data lokal saat ini ke Cloud
+                    await window.pushStateToCloud(false);
+                    if (showNotification) {
+                        showToast(`Akun Cloud "${cloudAccountMeta.accountId}" berhasil dibuat & disinkronkan! ☁️`);
+                    }
+                }
+
+                // Pasang pendengar Real-Time (onSnapshot) dengan callback error
+                activeUnsubscribe = onSnapshot(
+                    accountDocRef,
+                    (docSnapshot) => {
+                        if (!docSnapshot.exists()) return;
+                        const data = docSnapshot.data();
+                        if (!data || !data.payloadJson) return;
+
+                        // Abaikan jika update berasal dari kiriman perangkat ini sendiri
+                        if (data.updatedAt && data.updatedAt <= lastPushedTimestamp) return;
+
+                        try {
+                            const remoteState = JSON.parse(data.payloadJson);
+                            const localTime = appState.lastSavedAt || 0;
+                            const remoteTime = remoteState.lastSavedAt || data.updatedAt || 0;
+
+                            if (remoteTime > localTime) {
+                                applyRemoteCloudState(remoteState);
+                            }
+                        } catch (parseErr) {
+                            console.error("Gagal memproses data sinkronisasi:", parseErr);
+                        }
+                    },
+                    (error) => {
+                        console.error("Real-time sync listener error:", error);
+                    }
+                );
+            } catch (err) {
+                console.error("Gagal menghubungkan akun Cloud:", err);
+                if (showNotification) {
+                    showToast("Gagal menghubungi Cloud, menggunakan penyimpanan lokal.");
+                }
+            }
+        };
+
+        window.stopCloudSubscription = function () {
+            if (activeUnsubscribe) {
+                activeUnsubscribe();
+                activeUnsubscribe = null;
+            }
+        };
+
+        window.pushStateToCloud = async function (manualNotify = false) {
+            if (!db || !currentUser || !cloudAccountMeta.isConnected || !cloudAccountMeta.pinHash) return;
+            if (isApplyingRemoteUpdate) return;
+
+            try {
+                syncActiveTimersRemaining();
+                const now = Date.now();
+                appState.lastSavedAt = now;
+                lastPushedTimestamp = now;
+
+                const accountDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'synced_workspaces', cloudAccountMeta.pinHash);
+                await setDoc(accountDocRef, {
+                    accountId: cloudAccountMeta.accountId,
+                    updatedAt: now,
+                    updatedByUid: currentUser.uid,
+                    payloadJson: JSON.stringify(appState)
+                });
+
+                const lastSavedEl = document.getElementById('lastSavedTimeText');
+                if (lastSavedEl) {
+                    const timeStr = new Date(now).toLocaleTimeString('id-ID', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    lastSavedEl.textContent = `Tersinkron ke Cloud: ${timeStr}`;
+                }
+
+                if (manualNotify) {
+                    showToast(`Data berhasil disimpan ke Akun Cloud "${cloudAccountMeta.accountId}"! ☁️`);
+                }
+            } catch (err) {
+                console.error("Gagal mengunggah data ke Cloud:", err);
+                if (manualNotify) {
+                    showToast("Gagal mengunggah ke Cloud. Periksa koneksi internet.");
+                }
+            }
+        };
+
+        window.pullStateFromCloud = async function (manualNotify = false) {
+            if (!db || !currentUser || !cloudAccountMeta.isConnected || !cloudAccountMeta.pinHash) return;
+
+            try {
+                const accountDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'synced_workspaces', cloudAccountMeta.pinHash);
+                const snap = await getDoc(accountDocRef);
+                if (snap.exists() && snap.data().payloadJson) {
+                    const remoteState = JSON.parse(snap.data().payloadJson);
+                    applyRemoteCloudState(remoteState);
+                    if (manualNotify) {
+                        showToast(`Data terbaru dari Akun "${cloudAccountMeta.accountId}" berhasil dimuat! ☁️`);
+                    }
+                } else if (manualNotify) {
+                    showToast("Belum ada data tersimpan di Cloud untuk akun ini.");
+                }
+            } catch (err) {
+                console.error("Gagal menarik data dari Cloud:", err);
+                if (manualNotify) {
+                    showToast("Gagal mengambil data dari Cloud.");
+                }
+            }
+        };
+
+        function applyRemoteCloudState(remoteState) {
+            isApplyingRemoteUpdate = true;
+            try {
+                mergeLoadedState(remoteState);
+                originalSavePersistentState(true);
+
+                syncSoundButtonUI();
+                syncPreventCloseUI();
+                syncPresetButtonsUI();
+                renderChecklistUI();
+                renderHydrationUI();
+                restoreDrinkTimerOnReload();
+                restoreFocusTimerOnReload();
+
+                const lastSavedEl = document.getElementById('lastSavedTimeText');
+                if (lastSavedEl) {
+                    const timeStr = new Date().toLocaleTimeString('id-ID', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    lastSavedEl.textContent = `Disinkronkan dari Cloud: ${timeStr}`;
+                }
+            } finally {
+                setTimeout(() => {
+                    isApplyingRemoteUpdate = false;
+                }, 300);
+            }
+        }
+
+        // Jalankan inisialisasi Cloud saat modul siap
+        initFirebaseCloudSync();
+    </script>
+</body>
+</html>
